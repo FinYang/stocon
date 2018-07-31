@@ -4,53 +4,11 @@ library(glmnet)
 
 
 set.seed(2222)
-# old simulating Rt -----------------------------------------------------------
-
-time <- seq(from=0, to=0.5, by=0.1) # time span
-# Setting parameters:
-# n: number of assets
-# M: number of simulation
-# alpha, b, sigma, d, C (capital) are used in CIR simulation
-N <- 5
-M <- 1e4
-alpha <- 0.5
-b <- 0.4
-sigma <- 0.3
-
-#Rt <- vector("list", leMgth(time))
-rt <- matrix(nrow=M, ncol=N) 
-Rt <- lapply(seq_len(length(time)), function(X) rt)
-
-
-# setting the initial return at time 0
-Rt[[1]][ ,1] <- runif(M, min=0.2, max=0.8)
-Rt[[1]][ ,2] <- runif(M, min=0.2, max=0.8)
-Rt[[1]][ ,3] <- runif(M, min=0.2, max=0.8)
-Rt[[1]][ ,4] <- runif(M, min=0.2, max=0.8)
-Rt[[1]][ ,5] <- runif(M, min=0.2, max=0.8)
-
-# simulatin of return using CIR model 
-d <- 4*b*alpha/sigma^2
-if(d>1){
-  C <- (sigma^2*(1-exp(-alpha*(time[seq(time)+1]-time[seq(time)])))/(4*alpha)) %>% na.omit()
-  for(m in seq(N)){
-    for(i in 1:(length(time)-1)){
-      lambda <- Rt[[i]][,m]*(exp(-alpha*(time[i+1]-time[i])))/C[i]
-      Z <- rnorm(M)
-      X <- rchisq(M, d-1)
-      Rt[[i+1]][, m] <- C[i]*((Z+sqrt(lambda))^2+X)
-    }
-    
-  }
-}
-#Rt_bar <- sapply(Rt, colMeans) %>% t
-
-
 # new simulation CIR ------------------------------------------------------
 
 N <- 5
 a <- c(rep(0.09, 5))
-sigma <- c(0.02, 0.26, 0.27, 0.7, 0.9)
+sigma <- c(0.024, 0.026, 0.027, 0.003, 0.007)
 b <- c(0.07, 0.08, 0.09, 0.01, 0.02)
 
 time <- seq(from=0, to=5, by=1) # time span
@@ -67,29 +25,30 @@ rt <- matrix(nrow=M, ncol=N)
 Rt <- lapply(seq_len(length(time)), function(X) rt)
 Rt[[1]][ ,1] <- runif(M, min=0.06, max=0.08)
 Rt[[1]][ ,2] <- runif(M, min=0.07, max=0.09)
-Rt[[1]][ ,3] <- runif(M, min=0.08, max=0.01)
+Rt[[1]][ ,3] <- runif(M, min=0.08, max=0.1)
 Rt[[1]][ ,4] <- runif(M, min=0.05, max=0.15)
 Rt[[1]][ ,5] <- runif(M, min=0.01, max=0.03)
 
+# Loop over time and assets -----------------------------------------------
+
 for(n in 1:N) {
-  lambda <- Rt[[1]]*exp(-a*t_incre)/c
   if(d[n]>1){
     for(t in 2:length(time)){
       # Z<-randn(M,1)
-      Z <- rnorm(M*N) %>% matrix(nrow = M, ncol = N)
+      Z <- rnorm(M)
       # X<-chi2rnd(d-1,M,1)
-      X <- rchisq(M*N, d-1) %>% matrix(nrow = M, ncol = N)
-      lambda <- Rt[[t-1]]*exp(-a*t_incre)/c
-      Rt[[t]]<-c*((Z+sqrt(lambda))^2+X)
+      X <- rchisq(M, d-1) 
+      lambda <- Rt[[t-1]][,n]*exp(-a[n]*t_incre)/c[n]
+      Rt[[t]][,n]<-c[n]*((Z+sqrt(lambda))^2+X)
     }
   }else{
     for(t in 2:length(time)){
-      
+      lambda <- Rt[[t-1]][,n]*exp(-a[n]*t_incre)/c[n]
       # P<-poissrnd(lambda/2,M,1)
-      P <- rpois(M*N, lambda/2) %>% matrix(nrow = M, ncol = N)
+      P <- rpois(M, lambda/2)
       # X=chi2rnd(d+2*N)
-      X <- rchisq(1, d+2*P)
-      Rt[[t]]<-c*X
+      X <- rchisq(M, d[n]+2*P) 
+      Rt[[t]][,n]<-c*X
     } 
   }
 }
