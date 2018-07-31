@@ -49,43 +49,56 @@ if(d>1){
 # new simulation CIR ------------------------------------------------------
 
 N <- 5
-a <- c(rep(0.25, 5))
-sigma <- c(rep(0.25, 5))
-b <- c(rep(100, 5))
-x_0 <- c(rep(100, 5))
-T <- 2
+a <- c(rep(0.09, 5))
+sigma <- c(0.02, 0.26, 0.27, 0.7, 0.9)
+b <- c(0.07, 0.08, 0.09, 0.01, 0.02)
+
+time <- seq(from=0, to=5, by=1) # time span
+t_incre <- 1
+
 d <- 4*a*b/sigma^2
-c <- sigma^2*(1-exp(-a*T))/(4*a)
-lambda <- x_0*exp(-a*T)/c
+c <- sigma^2*(1-exp(-a*t_incre))/(4*a)
+
 
 M<-1e4
 
 # Rt <- vector("list", T) 
 rt <- matrix(nrow=M, ncol=N) 
-Rt <- lapply(seq_len(T), function(X) rt)
+Rt <- lapply(seq_len(length(time)), function(X) rt)
+Rt[[1]][ ,1] <- runif(M, min=0.06, max=0.08)
+Rt[[1]][ ,2] <- runif(M, min=0.07, max=0.09)
+Rt[[1]][ ,3] <- runif(M, min=0.08, max=0.01)
+Rt[[1]][ ,4] <- runif(M, min=0.05, max=0.15)
+Rt[[1]][ ,5] <- runif(M, min=0.01, max=0.03)
 
 for(n in 1:N) {
+  lambda <- Rt[[1]]*exp(-a*t_incre)/c
   if(d[n]>1){
-    for(t in 1:T){
+    for(t in 2:length(time)){
       # Z<-randn(M,1)
-      Z <- rnorm(M)
+      Z <- rnorm(M*N) %>% matrix(nrow = M, ncol = N)
       # X<-chi2rnd(d-1,M,1)
-      X <- rchisq(M, d-1)
-      Rt[[t]][,n]<-c*((Z+sqrt(lambda[n]))^2+X)
+      X <- rchisq(M*N, d-1) %>% matrix(nrow = M, ncol = N)
+      lambda <- Rt[[t-1]]*exp(-a*t_incre)/c
+      Rt[[t]]<-c*((Z+sqrt(lambda))^2+X)
     }
   }else{
-    for(t in 1:T){
+    for(t in 2:length(time)){
       
       # P<-poissrnd(lambda/2,M,1)
-      P <- rpois(M, lambda/2)
+      P <- rpois(M*N, lambda/2) %>% matrix(nrow = M, ncol = N)
       # X=chi2rnd(d+2*N)
-      X<-rchisq(1, d+2*P)
-      Rt[[t]][,n]<-c*X
+      X <- rchisq(1, d+2*P)
+      Rt[[t]]<-c*X
     } 
   }
 }
-#define weights
+
+# define weights ----
 weights <- matrix(c(0.2, 0.3, 0.5, 0, 0))
+#####
+
+
 # getting Rtw using simulated Rt and defined weights
 Rtw <- lapply(Rt, function(x) x %*% weights) %>% lapply(as.vector)
 # Using lasso to get estimated weights. 
