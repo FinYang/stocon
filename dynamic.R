@@ -23,6 +23,7 @@ M<-1e4
 # Rt <- vector("list", T) 
 rt <- matrix(nrow=M, ncol=N) 
 Rt <- lapply(seq_len(length(time)), function(X) rt)
+# return at time 0
 Rt[[1]][ ,1] <- runif(M, min=0.06, max=0.08)
 Rt[[1]][ ,2] <- runif(M, min=0.07, max=0.09)
 Rt[[1]][ ,3] <- runif(M, min=0.08, max=0.1)
@@ -54,42 +55,51 @@ for(n in 1:N) {
 }
 
 # define weights ----
-weights <- matrix(c(0.2, 0.3, 0.5, 0, 0))
+#weights <- matrix(c(0.2, 0.3, 0.5, 0, 0))
 #####
 
+# lasso_weights ----
 
-# getting Rtw using simulated Rt and defined weights
-Rtw <- lapply(Rt, function(x) x %*% weights) %>% lapply(as.vector)
-# Using lasso to get estimated weights. 
-#currently drop the intercept after estimation
-lasso.weights.m <- mapply(function(y, x) cv.glmnet(x, y, alpha = 1) %>% list(), x=Rt,y=Rtw)
+lasso_data <- lapply(Rt, function(Rt) cbind(Rt[,1], Rt[,2:N]-Rt[,1]))
+lasso.weights.m <- mapply(function(data) 
+  cv.glmnet(x=as.matrix(data[,2:N]), as.matrix(data[,1]), 
+            alpha = 1) %>% list(), data = lasso_data)
 lasso.weights <- mapply(coef, lasso.weights.m)
 lasso.weights <- do.call(cbind, lasso.weights) %>% as.matrix() %>% .[-1,]
-colnames(lasso.weights) <- time #currently just drop the intercept after estimation
+lasso.weights <- rbind(1-colSums(lasso.weights), lasso.weights)
+colnames(lasso.weights) <- time 
+rownames(lasso.weights) <- paste("Asset",1:N, sep = "_")
+
+# Compute Rtw ----
+weights_list <- lasso.weights %>% data.frame() %>% as.list()
+Rtw <- mapply(function(r,w) r %*% as.matrix(w), r=Rt, w=weights_list)
+
+
 # Rtw <-t(weights) %*% t(Rt_bar) 
-Rtw <- mapply(function(list, newx) predict(list, newx), lasso.weights.m, Rt)
-Rtw <- colMeans(Rtw) 
-# Rtw used in dynimic estimation are the average of the fitted Rtw from lasso models
-W <- numeric(length(time))
-W[1] <- 1000 # initial wealth
-beta <- 1/1.05 #discount factor
-# utility function, currently just identity
+# wealth ----
+W <- matrix(nrow = M, ncol = length(time))
+W[,1] <- 1000 # initial wealth currently set to be the same 
+# discount factor ----
+beta <- 1/1.05 #discount factor currently set to be the same 
+
+# utility_function ----
+# currently just identity
 u <- function(W){ 
   return(W)
 }
 
-c <- numeric(length(time)-1)
+consu <- numeric(length(time)-1)
 # Value
 V <- function(theta, decision = length(time)-1){
   for(i in 1:(length(time)-1)){
-    c[i] <- W[i]*inv.logit(theta[1]+theta[2]*Rtw[i]) # consumption has been set to logit
-    W[i+1] <- Rtw[i]*(W[i]-c[i])
+    consu[i] <- W[i]*inv.logit(theta[1]+theta[2]*Rtw[i]) # consumption has been set to logit
+    W[i+1] <- Rtw[i]*(W[i]-consu[i])
   }
   Vt <- numeric(length(decision:(length(time)-1)))
   Vt[length(Vt)] <- beta^(length(time)-1) * u(W[length(W)])
   for(i in (length(decision:(length(time)-1))-1):1){
     t <- (decision:(length(time)-1))[i]
-    Vt[i] <- beta^t*u(c[t+1])+Vt[i+1]
+    Vt[i] <- beta^t*u(consu[t+1])+Vt[i+1]
   }
   # for(i in 1:(length(decision:(length(time)-1))-1)){
   #   t <- (decision:(length(time)-1))[i]
