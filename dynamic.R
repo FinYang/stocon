@@ -1,5 +1,6 @@
 library(tidyverse)
 library(glmnet)
+library(boot)
 
 
 
@@ -88,25 +89,35 @@ u <- function(W){
   return(W)
 }
 
-consu <- numeric(length(time)-1)
+consu <- matrix(nrow = M, ncol = length(time)-1)
 # Value
-V <- function(theta, decision = length(time)-1){
-  for(i in 1:(length(time)-1)){
-    consu[i] <- W[i]*inv.logit(theta[1]+theta[2]*Rtw[i]) # consumption has been set to logit
-    W[i+1] <- Rtw[i]*(W[i]-consu[i])
-  }
-  Vt <- numeric(length(decision:(length(time)-1)))
-  Vt[length(Vt)] <- beta^(length(time)-1) * u(W[length(W)])
-  for(i in (length(decision:(length(time)-1))-1):1){
-    t <- (decision:(length(time)-1))[i]
-    Vt[i] <- beta^t*u(consu[t+1])+Vt[i+1]
-  }
-  # for(i in 1:(length(decision:(length(time)-1))-1)){
-  #   t <- (decision:(length(time)-1))[i]
-  #   Vt[i] <- beta^t*u(c[t+1])
-  # }
-  sum(Vt) %>% return()
+theta  <- matrix(rep(0, (length(time)-1)*2), ncol = 2)
+
+for(i in 1:(length(time)-1)){
+  consu[,i] <- W[,i]*inv.logit(theta[i,1]+theta[i,2]*Rtw[,i]) # consumption has been set to logit
+  W[,i+1] <- Rtw[,i]*(W[,i]-consu[,i])
 }
 
-optim(c(10, 3), V)
+Vt <- matrix(nrow=M, ncol=length(time)) 
+
+Vt[,length(time)] <- beta^(length(time)-1) * u(W[,length(time)])
+v <- Vt[,length(time)] 
+for(i in (length(time)-1):1){
+  
+  V <- function(theta){
+    consum <- W[,i]*inv.logit(theta[1]+theta[2]*Rtw[,i])
+    (mean(beta^i*u(consum)) + mean(v)) %>% return()
+  }
+  theta[i,] <- optim(c(0,0), V)$par
+  consu[,i] <- W[,i]*inv.logit(theta[i,1]+theta[i,2]*Rtw[,i])
+  W[,i+1] <- Rtw[,i]*(W[,i]-consu[,i])
+  if(i==(length(time)-1)){
+    Vt[,length(time)] <- beta^(length(time)-1) * u(W[,length(time)])
+  } else {
+    Vt[,i] <- beta^i*u(consu[,i])
+  }
+  v <- (beta^i*u(consu[,i]) + Vt[,i+1]) 
+}
+
+
 
