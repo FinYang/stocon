@@ -5,6 +5,11 @@ library(boot)
 
 
 set.seed(2222)
+time <- seq(from=0, to=5, by=1) # time span
+t_incre <- 1
+N <- 5
+M<-1e4
+
 theta  <- matrix(rep(0, (length(time)-1)*2), ncol = 2)
 
 # big loop
@@ -12,19 +17,18 @@ for(bl in 1:3){
   
   # new simulation CIR ------------------------------------------------------
   
-  N <- 5
+
   a <- c(rep(0.09, 5))
   sigma <- c(0.024, 0.026, 0.027, 0.003, 0.007)
   b <- c(0.07, 0.08, 0.09, 0.01, 0.02)
   
-  time <- seq(from=0, to=5, by=1) # time span
-  t_incre <- 1
+
   
   d <- 4*a*b/sigma^2
   c <- sigma^2*(1-exp(-a*t_incre))/(4*a)
   
   
-  M<-1e4
+
   
   # Rt <- vector("list", T) 
   rt <- matrix(nrow=M, ncol=N) 
@@ -90,17 +94,21 @@ for(bl in 1:3){
   
   # utility_function ----
   # currently just identity
-  u <- function(W){ 
-    return(W)
+  u <- function(x, alpha = 0.5){
+    -exp(-alpha*x) %>% return()
   }
   
+  #power utility
+  # u <- function(x, lambda = 0.9){
+  #   x^(1-lambda)/(1-lambda) %>% return()
+  # }
   consu <- matrix(nrow = M, ncol = length(time)-1)
   # Value
   
   
   for(i in 1:(length(time)-1)){
     consu[,i] <- W[,i]*inv.logit(theta[i,1]+theta[i,2]*Rtw[,i]) # consumption has been set to logit
-    W[,i+1] <- Rtw[,i]*(W[,i]-consu[,i])
+    W[,i+1] <- (1+Rtw[,i])*(W[,i]-consu[,i])
   }
   
   Vt <- matrix(nrow=M, ncol=length(time)) 
@@ -109,20 +117,21 @@ for(bl in 1:3){
   v_cmu <- Vt[,length(time)] 
   for(i in (length(time)-1):1){
     
-    V <- function(theta, v_cmu){
-      consum <- W[,i]*inv.logit(theta[1]+theta[2]*Rtw[,i])
+    V <- function(thet, v_cmu){
+      consum <- W[,i]*inv.logit(thet[1]+thet[2]*Rtw[,i])
       (mean(beta^i*u(consum)) + mean(v_cmu)) %>% return()
     }
     theta[i,] <- optim(c(0,0), V, v_cmu=v_cmu)$par
     for(l in i:(length(time)-1)){
       consu[,l] <- W[,l]*inv.logit(theta[l,1]+theta[l,2]*Rtw[,l])
-      W[,l+1] <- Rtw[,l]*(W[,l]-consu[,l])
+      W[,l+1] <- (1+Rtw[,l])*(W[,l]-consu[,l])
       Vt[,l] <- beta^(l-1)*u(consu[,l])
     }
     Vt[,length(time)] <- beta^(length(time)-1) * u(W[,length(time)])
     
     v_cum <- rowSums(Vt[,i:length(time)])
   }
+  
   
   
   
