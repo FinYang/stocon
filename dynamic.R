@@ -5,30 +5,16 @@ library(boot)
 
 
 set.seed(2222)
-time <- seq(from=0, to=5, by=1) # time span
+time <- seq(from=0, to=3, by=1) # time span
 t_incre <- 1
 N <- 5
 M<-1e4
 
-theta  <- matrix(rep(0, (length(time)-1)*2), ncol = 2)
+theta  <- rep(0, (length(time)-1)*2) %>% matrix(ncol = 2)
 
 # big loop
-for(bl in 1:3){
+for(bl in 1:1){
   
-  # new simulation CIR ------------------------------------------------------
-  
-
-  a <- c(rep(0.09, 5))
-  sigma <- c(0.024, 0.026, 0.027, 0.003, 0.007)
-  b <- c(0.07, 0.08, 0.09, 0.01, 0.02)
-  
-
-  
-  d <- 4*a*b/sigma^2
-  c <- sigma^2*(1-exp(-a*t_incre))/(4*a)
-  
-  
-
   
   # Rt <- vector("list", T) 
   rt <- matrix(nrow=M, ncol=N) 
@@ -40,29 +26,62 @@ for(bl in 1:3){
   Rt[[1]][ ,4] <- runif(M, min=0.05, max=0.15)
   Rt[[1]][ ,5] <- runif(M, min=0.01, max=0.03)
   
-  # Loop over time and assets -----------------------------------------------
   
-  for(n in 1:N) {
-    if(d[n]>1){
-      for(t in 2:length(time)){
-        # Z<-randn(M,1)
-        Z <- rnorm(M)
-        # X<-chi2rnd(d-1,M,1)
-        X <- rchisq(M, d-1) 
-        lambda <- Rt[[t-1]][,n]*exp(-a[n]*t_incre)/c[n]
-        Rt[[t]][,n]<-c[n]*((Z+sqrt(lambda))^2+X)
-      }
-    }else{
-      for(t in 2:length(time)){
-        lambda <- Rt[[t-1]][,n]*exp(-a[n]*t_incre)/c[n]
-        # P<-poissrnd(lambda/2,M,1)
-        P <- rpois(M, lambda/2)
-        # X=chi2rnd(d+2*N)
-        X <- rchisq(M, d[n]+2*P) 
-        Rt[[t]][,n]<-c*X
-      } 
-    }
+  # simple simulation
+  mu <- c(0.001, 0.0015, 0.0012, 0.0003, 0.0004)
+  vol <- c(0.01, 0.02, 0.03, 0.06, 0.07)
+  
+  rho_do <- function(i,j, par=0.9){
+    exp(-par*(i-j)) %>% return()
   }
+  rho_m <- sapply(1:N, function(i) {
+    sapply(1:N, function(j) rho_do(i=i, j=j))
+  })
+  rho_m[lower.tri(rho_m, TRUE)] <- 0
+  rho_m <- rho_m + t(rho_m) + diag(rep(1, N))
+  
+  varcov <- vol %*% t(vol) * rho_m
+  A <- chol(varcov)
+  
+  for(t in 2:(length(time))){
+    Z <- matrix(rnorm(M*N), ncol=N)
+    Rt[[t]] <- Rt[[t-1]] + t(replicate(M,mu))*t_incre + sqrt(t_incre) * Z %*% A
+  }
+  
+  
+  # simulation CIR ------------------------------------------------------
+  # 
+  # 
+  # a <- c(rep(0.09, 5))
+  # sigma <- c(0.024, 0.026, 0.027, 0.06, 0.08)
+  # b <- c(0.07, 0.08, 0.09, 0.01, 0.02)
+  # 
+  # d <- 4*a*b/sigma^2
+  # c <- sigma^2*(1-exp(-a*t_incre))/(4*a)
+  # 
+  # Loop over time and assets -----------------------------------------------
+  # 
+  # for(n in 1:N) {
+  #   if(d[n]>1){
+  #     for(t in 2:length(time)){
+  #       # Z<-randn(M,1)
+  #       Z <- rnorm(M)
+  #       # X<-chi2rnd(d-1,M,1)
+  #       X <- rchisq(M, d-1) 
+  #       lambda <- Rt[[t-1]][,n]*exp(-a[n]*t_incre)/c[n]
+  #       Rt[[t]][,n]<-c[n]*((Z+sqrt(lambda))^2+X)
+  #     }
+  #   }else{
+  #     for(t in 2:length(time)){
+  #       lambda <- Rt[[t-1]][,n]*exp(-a[n]*t_incre)/c[n]
+  #       # P<-poissrnd(lambda/2,M,1)
+  #       P <- rpois(M, lambda/2)
+  #       # X=chi2rnd(d+2*N)
+  #       X <- rchisq(M, d[n]+2*P) 
+  #       Rt[[t]][,n]<-c*X
+  #     } 
+  #   }
+  # }
   
   # define weights ----
   #weights <- matrix(c(0.2, 0.3, 0.5, 0, 0))
@@ -93,15 +112,14 @@ for(bl in 1:3){
   beta <- 1/1.05 #discount factor currently set to be the same 
   
   # utility_function ----
-  # currently just identity
-  u <- function(x, alpha = 0.5){
-    -exp(-alpha*x) %>% return()
-  }
-  
-  #power utility
-  # u <- function(x, lambda = 0.9){
-  #   x^(1-lambda)/(1-lambda) %>% return()
+  # u <- function(x, alpha = 0.5){
+  #   -exp(-alpha*x) %>% return()
   # }
+  # 
+  #power utility
+  u <- function(x, lambda = 0.9){
+    x^(1-lambda)/(1-lambda) %>% return()
+  }
   consu <- matrix(nrow = M, ncol = length(time)-1)
   # Value
   
