@@ -1,6 +1,7 @@
 library(tidyverse)
 library(glmnet)
 library(boot)
+library(quadprog)
 
 
 
@@ -13,24 +14,24 @@ M<-1e4
 theta  <- rep(0, (length(time)-1)*2) %>% matrix(ncol = 2)
 
 # big loop
-for(bl in 1:1){
+# for(bl in 1:1){
   
-  
-  # Rt <- vector("list", T) 
+    # Rt <- vector("list", T) 
   rt <- matrix(nrow=M, ncol=N) 
   Rt <- lapply(seq_len(length(time)), function(X) rt)
   # return at time 0
   Rt[[1]][ ,1] <- runif(M, min=0.06, max=0.08)
-  Rt[[1]][ ,2] <- runif(M, min=0.07, max=0.09)
-  Rt[[1]][ ,3] <- runif(M, min=0.08, max=0.1)
-  Rt[[1]][ ,4] <- runif(M, min=0.05, max=0.15)
-  Rt[[1]][ ,5] <- runif(M, min=0.01, max=0.03)
+  Rt[[1]][ ,2] <- runif(M, min=0.01, max=0.03)
+  Rt[[1]][ ,3] <- runif(M, min=0.07, max=0.09)
+  Rt[[1]][ ,4] <- runif(M, min=0.02, max=0.04)
+  Rt[[1]][ ,5] <- runif(M, min=0.11, max=0.13)
   
   
   # simple simulation
-  mu <- c(0.001, 0.0015, 0.0012, 0.0003, 0.0004)
-  vol <- c(0.01, 0.02, 0.03, 0.06, 0.07)
+  mu <- c(0.001, 0.0003, 0.0012, 0.0004, 0.0015)
+  vol <- c(0.01, 0.06, 0.03, 0.07, 0.005)
   
+  # covariance matrix
   rho_do <- function(i,j, par=0.9){
     exp(-par*(i-j)) %>% return()
   }
@@ -42,6 +43,7 @@ for(bl in 1:1){
   
   varcov <- vol %*% t(vol) * rho_m
   A <- chol(varcov)
+  # -
   
   for(t in 2:(length(time))){
     Z <- matrix(rnorm(M*N), ncol=N)
@@ -87,17 +89,44 @@ for(bl in 1:1){
   #weights <- matrix(c(0.2, 0.3, 0.5, 0, 0))
   #####
   
+  # no-short-sale portfolio quadratic programming
+  
+  qp_weights_do <- function(Rt){
+    Dmat <- cov(Rt)
+    dvec <- rep(0,5)
+    l1norm_A <- as.matrix(expand.grid(rep(list(c(-1,1)),5)))
+    Amat <- rbind(rep(-1,5), l1norm_A)
+    bvec <- rep(-1,NROW(l1norm_A)+1)
+    qp <- quadprog::solve.QP(Dmat, dvec, t(Amat), bvec, meq=1)
+    qp_weights <- qp$solution
+    return(qp_weights)
+  }
+  qp_weights <- mapply(qp_weights_do, Rt)
+  Rt_noshortsale <- mapply(function(Rt,w) Rt %*% w, 
+                           Rt = Rt, 
+                           w = as.data.frame(qp_weights))
+  
   # lasso_weights ----
   
-  lasso_data <- lapply(Rt, function(Rt) cbind(Rt[,1], Rt[,2:N]-Rt[,1]))
+  ns_Rt <- mapply(function(ns, Rt) cbind(ns, Rt), ns = as.data.frame(Rt_noshortsale), Rt = Rt, SIMPLIFY = F)
+  lasso_data <- lapply(ns_Rt, function(Rt) cbind(Rt[,1], Rt[,2:NCOL(Rt)]-Rt[,1]))
   lasso.weights.m <- mapply(function(data) 
-    cv.glmnet(x=as.matrix(data[,2:N]), as.matrix(data[,1]), 
-              alpha = 1) %>% list(), data = lasso_data)
+    cv.glmnet(x=as.matrix(data[,2:NCOL(data)]), 
+              y=as.matrix(data[,1]), 
+              alpha = 1, 
+              intercept = TRUE,
+              lambda = exp(seq(log(0.00001), log(3), length.out=200))) %>% 
+      list(), 
+    data = lasso_data)
   lasso.weights <- mapply(coef, lasso.weights.m)
   lasso.weights <- do.call(cbind, lasso.weights) %>% as.matrix() %>% .[-1,]
-  lasso.weights <- rbind(1-colSums(lasso.weights), lasso.weights)
+  ns.weights <- apply(lasso.weights, 2, function(x) 1-sum(x))
+  weights <- matrix(rep(ns.weights,N), byrow = T, nrow = N)*qp_weights + lasso.weights
+  # lasso.weights <- rbind(1-colSums(lasso.weights), lasso.weights)
   colnames(lasso.weights) <- time 
   rownames(lasso.weights) <- paste("Asset",1:N, sep = "_")
+  
+  
   
   # Compute Rtw ----
   weights_list <- lasso.weights %>% data.frame() %>% as.list()
@@ -125,9 +154,10 @@ for(bl in 1:1){
   
   
   for(i in 1:(length(time)-1)){
-    consu[,i] <- W[,i]*inv.logit(theta[i,1]+theta[i,2]*Rtw[,i]) # consumption has been set to logit
+    consu[,i] <- W[,i]*inv.logit(theta[i,1]+theta[i,2]*Rtw[,i]) 
     W[,i+1] <- (1+Rtw[,i])*(W[,i]-consu[,i])
   }
+  # consumption has been set to logit
   
   Vt <- matrix(nrow=M, ncol=length(time)) 
   
@@ -153,4 +183,4 @@ for(bl in 1:1){
   
   
   
-}
+# }
