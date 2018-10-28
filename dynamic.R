@@ -17,126 +17,14 @@ M<-1e4
 # big loop
 # for(bl in 1:1){
 
-# Rt <- vector("list", T)
-rt <- matrix(nrow=M, ncol=N)
-Rt <- lapply(seq_len(Tn+1), function(X) rt)
-# return at time 0
-Rt[[1]][ ,1] <- runif(M, min=0.06, max=0.08)
-Rt[[1]][ ,2] <- runif(M, min=0.01, max=0.03)
-Rt[[1]][ ,3] <- runif(M, min=0.07, max=0.09)
-Rt[[1]][ ,4] <- runif(M, min=0.02, max=0.04)
-Rt[[1]][ ,5] <- runif(M, min=0.11, max=0.13)
+rt <- sim_simple()
+weights <- lasso_weights(rt)
 
-
-# simple simulation
-mu <- c(0.001, 0.0003, 0.0012, 0.0004, 0.0015)
-vol <- c(0.01, 0.06, 0.03, 0.07, 0.005)
-
-# covariance matrix
-rho_do <- function(i,j, par=0.9){
-  exp(-par*(i-j)) %>% return()
-}
-rho_m <- sapply(1:N, function(i) {
-  sapply(1:N, function(j) rho_do(i=i, j=j))
-})
-rho_m[lower.tri(rho_m, TRUE)] <- 0
-rho_m <- rho_m + t(rho_m) + diag(rep(1, N))
-
-varcov <- vol %*% t(vol) * rho_m
-A <- chol(varcov)
-# -
-
-for(t in 2:(Tn+1)){
-  Z <- matrix(rnorm(M*N), ncol=N)
-  Rt[[t]] <- Rt[[t-1]] + t(replicate(M,mu))*t_incre + sqrt(t_incre) * Z %*% A
-}
-
-
-# simulation CIR ------------------------------------------------------
-#
-#
-# a <- c(rep(0.09, 5))
-# sigma <- c(0.024, 0.026, 0.027, 0.06, 0.08)
-# b <- c(0.07, 0.08, 0.09, 0.01, 0.02)
-#
-# d <- 4*a*b/sigma^2
-# c <- sigma^2*(1-exp(-a*t_incre))/(4*a)
-#
-# Loop over time and assets -----------------------------------------------
-#
-# for(n in 1:N) {
-#   if(d[n]>1){
-#     for(t in 2:length(time)){
-#       # Z<-randn(M,1)
-#       Z <- rnorm(M)
-#       # X<-chi2rnd(d-1,M,1)
-#       X <- rchisq(M, d-1)
-#       lambda <- Rt[[t-1]][,n]*exp(-a[n]*t_incre)/c[n]
-#       Rt[[t]][,n]<-c[n]*((Z+sqrt(lambda))^2+X)
-#     }
-#   }else{
-#     for(t in 2:length(time)){
-#       lambda <- Rt[[t-1]][,n]*exp(-a[n]*t_incre)/c[n]
-#       # P<-poissrnd(lambda/2,M,1)
-#       P <- rpois(M, lambda/2)
-#       # X=chi2rnd(d+2*N)
-#       X <- rchisq(M, d[n]+2*P)
-#       Rt[[t]][,n]<-c*X
-#     }
-#   }
-# }
-
+weights_list <- weights %>% data.frame() %>% as.list()
 # define weights ----
 #weights <- matrix(c(0.2, 0.3, 0.5, 0, 0))
 
 
-# no-short-sale portfolio quadratic programming
-
-qp_weights_do <- function(Rt){
-  Dmat <- cov(Rt)
-  dvec <- rep(0,5)
-  l1norm_A <- as.matrix(expand.grid(rep(list(c(-1,1)),5)))
-  Amat <- rbind(rep(-1,5), l1norm_A)
-  bvec <- rep(-1,NROW(l1norm_A)+1)
-  qp <- quadprog::solve.QP(Dmat, dvec, t(Amat), bvec, meq=1)
-  qp_weights <- qp$solution
-  return(qp_weights)
-}
-qp_weights <- mapply(qp_weights_do, Rt)
-Rt_noshortsale <- mapply(function(Rt,w) Rt %*% w,
-                         Rt = Rt,
-                         w = as.data.frame(qp_weights))
-
-# lasso_weights ----
-
-ns_Rt <- mapply(function(ns, Rt) cbind(ns, Rt), ns = as.data.frame(Rt_noshortsale), Rt = Rt, SIMPLIFY = F)
-lasso_data <- lapply(ns_Rt, function(Rt) cbind(Rt[,1], Rt[,2:NCOL(Rt)]-Rt[,1]))
-lasso.weights.m <- mapply(function(data)
-  cv.glmnet(x=as.matrix(data[,2:NCOL(data)]),
-            y=as.matrix(data[,1]),
-            alpha = 1,
-            intercept = TRUE,
-            lambda = exp(seq(log(0.00001), log(3), length.out=200))) %>%
-    list(),
-  data = lasso_data)
-lasso.weights <- mapply(coef, lasso.weights.m)
-lasso.weights <- do.call(cbind, lasso.weights) %>% as.matrix() %>% .[-1,]
-ns.weights <- apply(lasso.weights, 2, function(x) 1-sum(x))
-weights <- matrix(rep(ns.weights,N), byrow = T, nrow = N)*qp_weights + lasso.weights
-# lasso.weights <- rbind(1-colSums(lasso.weights), lasso.weights)
-colnames(weights) <- time
-rownames(weights) <- paste("Asset",1:N, sep = "_")
-
-
-
-# Compute Rtw ----
-weights_list <- weights %>% data.frame() %>% as.list()
-
-
-# Rtw <- mapply(function(r,w) r %*% as.matrix(w), r=Rt, w=weights_list)
-
-
-# Rtw <-t(weights) %*% t(Rt_bar)
 # wealth ----
 W <- matrix(nrow = Tn+1, ncol = M)
 W[1,] <- 1000 # initial wealth currently set to be the same
