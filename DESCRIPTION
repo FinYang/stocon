@@ -9,5 +9,7 @@ Encoding: UTF-8
 LazyData: true
 Imports: tidyverse,
     glmnet,
-    quadprog
+    quadprog,
+    quadprogXT
 RoxygenNote: 6.1.0
+Suggests: quadprogXT

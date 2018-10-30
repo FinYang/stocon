@@ -49,7 +49,15 @@ value_func <- function(updatetheta, i, theta,
   return(list(W=W,Value=Value))
 }
 
-
+neg_value_func <- function(updatetheta, i, theta,
+                           Rt, M = NROW(Rt[[1]]), Tn = length(Rt) - 1,
+                           weights, W = NULL, ValueOnly = T, utility = power_u,
+                           beta = 1/1.05, consu_function = inv.logit){
+  -value_func(updatetheta, i, theta,
+              Rt, M , Tn ,
+              weights, W , ValueOnly, utility,
+              beta, consu_function)
+}
 
 
 #' Dynamic optimization
@@ -87,16 +95,17 @@ optim_dynam <- function(Rt, M = NROW(Rt[[1]]), Tn = length(Rt) - 1,
 
   for(t in Tn:1){
     # theta(t,:)=fminunc(@(updatetheta)value_func(updatetheta,t, theta, R,weight, M, 10, W),theta(t,:));
-    theta[t,] <- optim(theta[t,], value_func, i=t, theta = theta,
+    theta[t,] <- optim(theta[t,], neg_value_func, i=t, theta = theta,
                        Rt = Rt, weights = weights, W=W,
-                       ValueOnly = TRUE, utility = utility, beta = beta, consu_function = consu_function)$par
+                       ValueOnly = TRUE, utility = utility, beta = beta,
+                       consu_function = consu_function)$par
     # update?
     # W <- value_func(theta[t,], i=t, theta = theta,
     #                 Rt = Rt, weights = weights, W=W, ValueOnly = F, utility = utility)$W
   }
-  value <- value_func(0, 1, theta, Rt, M=M, Tn=Tn,  weights, W,
-             utility = utility, ValueOnly = T, beta = beta, consu_function = consu_function)
-  return(list(theta, value))
+  w_value <- value_func(theta[1,], 1, theta, Rt, M=M, Tn=Tn,  weights, W,
+             utility = utility, ValueOnly = F, beta = beta, consu_function = consu_function)
+  return(list(theta = theta, v = w_value$Value, W = w_value$W))
 }
 
 
@@ -123,3 +132,5 @@ optim_dynam <- function(Rt, M = NROW(Rt[[1]]), Tn = length(Rt) - 1,
 #
 #   v_cum <- rowSums(Vt[,i:(Tn+1)])
 # }
+
+

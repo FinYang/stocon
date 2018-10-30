@@ -3,23 +3,59 @@
 #' no-short-sale portfolio quadratic programming
 #' @author Yangzhuoran Yang
 #' @export
-qp_weights <- function(Rt){
-  qp_weights <- mapply(qp_weights_do, Rt)
+qp_weights <- function(rt){
+  qp_weights <- mapply(qp_weights_do, rt)
   return(qp_weights)
 }
 
 
 # no-short-sale portfolio quadratic programming
 
-qp_weights_do <- function(Rt){
-  Dmat <- cov(Rt)
-  dvec <- rep(0,5)
-  l1norm_A <- as.matrix(expand.grid(rep(list(c(-1,1)),5)))
-  Amat <- rbind(rep(-1,5), l1norm_A)
-  bvec <- rep(-1,NROW(l1norm_A)+1)
-  qp <- quadprog::solve.QP(Dmat, dvec, t(Amat), bvec, meq=1)
+qp_weights_do <- function(rt, constr = 1){
+  # n <- NCOL(rt)
+  # Dmat <- cov(rt)
+  # dvec <- numeric(n)
+  # l1norm_A <- as.matrix(expand.grid(rep(list(c(-1,1)),n)))
+  # Amat <- rbind(rep(-1,5), l1norm_A)
+  # bvec <- rep(-1,NROW(l1norm_A)+1)
+  # qp <- quadprog::solve.QP(Dmat, dvec, t(Amat), bvec, meq=1)
+  # qp_weights <- qp$solution
+
+  n <- NCOL(rt)
+  Dmat <- cov(rt)
+  dvec <- numeric(n)
+  Amat <- matrix(rep(1,n))
+  AmatPosNeg <- matrix(rep(-1, 2 * n))
+  bvecPosNeg <- -constr
+  bvec <- 1
+  qp <- try(quadprogXT::solveQPXT(Dmat, dvec, Amat, bvec, meq=1,
+                                  AmatPosNeg = AmatPosNeg, bvecPosNeg = bvecPosNeg))
+  if("try-error" %in% class(qp)) {
+    warning("Possible overflow error. Attempting to scale Dmat.
+            Or you can use unstable `qp_orig`, not recommended in high dimensions")
+
+    sc <- norm(Dmat,"2")
+    qp <- try(quadprogXT::solveQPXT(Dmat/sc, dvec/sc, Amat, bvec, meq=1,
+                                AmatPosNeg = AmatPosNeg, bvecPosNeg = bvecPosNeg))
+    if("try-error" %in% class(qp)){
+      warning("Attempt failed. Switch to `qp_orig`")
+      return(qp_orig(rt, constr))
+    }
+  }
+
   qp_weights <- qp$solution
-  return(qp_weights)
+  return(qp_weights[1:n])
+}
+
+qp_orig <- function(rt, constr = 1){
+  n <- NCOL(rt)
+  Dmat <- cov(rt)
+  dvec <- numeric(n)
+  l1norm_A <- as.matrix(expand.grid(rep(list(c(-1,1)),n)))
+  Amat <- rbind(rep(-1,5), l1norm_A)
+  bvec <- c(-1, rep(-constr,NROW(l1norm_A)))
+  qp <- quadprog::solve.QP(Dmat, dvec, t(Amat), bvec, meq=1)
+  qp$solution
 }
 
 
