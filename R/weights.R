@@ -30,6 +30,7 @@ qp_weights_do <- function(Rt){
 #' Default using lasso after quadratic programming
 #'
 #' @author Yangzhuoran Yang
+#' @importFrom magrittr %>%
 #' @export
 lasso_weights <- function(Rt, N = NCOL(Rt[[1]]), qp_lasso = TRUE, qp_weights = NULL){
   if(qp_lasso){
@@ -40,8 +41,6 @@ lasso_weights <- function(Rt, N = NCOL(Rt[[1]]), qp_lasso = TRUE, qp_weights = N
   input_Rt <- mapply(function(ns, Rt) cbind(ns, Rt), ns = as.data.frame(Rt_noshortsale), Rt = Rt, SIMPLIFY = F)
   } else input_Rt <- Rt
   lasso_data <- lapply(input_Rt, function(Rt) cbind(Rt[,1], Rt[,2:NCOL(Rt)]-Rt[,1]))
-
-
 
 
   # lasso_weights ----
