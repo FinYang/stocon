@@ -10,6 +10,8 @@ LazyData: true
 Imports: tidyverse,
     glmnet,
     quadprog,
-    quadprogXT
+    quadprogXT,
+    kernlab,
+    caret
 RoxygenNote: 6.1.0
 Suggests: quadprogXT

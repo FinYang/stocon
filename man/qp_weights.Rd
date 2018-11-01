@@ -4,7 +4,7 @@
 \alias{qp_weights}
 \title{no-short-sale portfolio quadratic programming}
 \usage{
-qp_weights(Rt)
+qp_weights(rt)
 }
 \description{
 no-short-sale portfolio quadratic programming

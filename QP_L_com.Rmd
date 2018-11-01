@@ -1,0 +1,136 @@
+---
+title: "QP Lasso Comparison"
+author: "Fin"
+date: "31 October 2018"
+output: 
+  bookdown::pdf_document2:
+    latex_engine: xelatex
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, error = FALSE, cache = T, message = F
+                      )
+
+```
+
+Detailed setting is attached in the writting part.  
+
+I write the whole process in a package called `stocon`, but I haven't upload it onto github 'cause I'm not sure if you want this public.  
+
+```{r function}
+library(stocon)
+library(tidyverse)
+
+set.seed(2222)
+compar <- function(defaultsetting = T){
+  v <- numeric(4)
+  rt <- sim_simple(Tn=10, N=5, M=1e4, defaultsetting)
+  
+  qp_weights <- qp_weights(rt)
+  qp_result <- optim_dynam(Rt = rt, weights = qp_weights)
+  v[1] <- qp_result$v
+  
+  qp_l_weights <- lasso_weights(rt, qp_lasso = TRUE, qp_weights = qp_weights)
+  qp_l_result <- optim_dynam(Rt = rt, weights = qp_l_weights)
+  v[2] <- qp_l_result$v
+
+  qp_cv_weights <- qp_weights(rt, constr = "cv")
+  qp_cv_result <- optim_dynam(Rt = rt, weights = qp_cv_weights)
+  v[3] <- qp_cv_result$v
+  
+  qp_nc_weights <- qp_weights(rt, constr = NULL)
+  qp_nc_result <- optim_dynam(Rt = rt, weights = qp_nc_weights)
+  v[4] <- qp_nc_result$v
+  v
+}
+```
+```{r value}
+# value4 <- replicate(100, compar())
+# write_csv(value, "value.csv")
+value <- read.csv("value.csv")
+```
+
+## Info
+
+In the legend in figure \@ref(fig:plot1) , `qp_ns` stands for no-short-sale quadratic programming, `qp_l` stands for quadratic programming followed by lasso, `qp_cv` stands for quadratic programming with cross validation selected constraint, and `qp_nc` stands for quadratic programming without constraint.
+
+```{r plot1, fig.cap="Value from value function with different weights extracting methods in 100 simulation."}
+library(ggplot2)
+# value <- as.data.frame(t(value))
+# colnames(value) <- c("qp_ns", "qp_l", "qp_cv")
+# value <- mutate(value, id = 1:NROW(value)) %>% gather(key = method, value = value, -id)
+ggplot(value, aes(x=id, y=value, color = method)) +
+  geom_point() +
+  geom_line() +
+  xlab("Index") +
+  ylab("Value")
+
+# ggplot(value, aes(x=id, y=value, fill = method)) +
+#   geom_bar(stat = "identity", position="dodge") +
+#   xlab("Index") +
+#   ylab("Value") +
+#   ylim(min(value$value), max(value$value))
+
+
+value_wide <- spread(value, method, value)
+```
+
+In those 100 simulation, all 5 assets follow the same pattern: two of them have relative advantage.  
+
+## Tests
+
+The proportion of `qp_l` outpeforming `qp_ns` is `r sum(value_wide$qp_ns<value_wide$qp_l)/100`. 
+
+
+```{r ltestns, fig.cap="Histogram of proportion of qp_l outperforming qp_ns with breaked association (after permutation) and the proportion from the original simulation sample"}
+perm <- function(value, b1, b0){
+  value$value <- sample(value$value)
+  value <- spread(value, method, value)
+  sum(value[b1]>value[b0])/100
+}
+perm_prop <- replicate(1000, perm(value, "qp_l", "qp_ns"))
+qplot(perm_prop) + geom_vline(xintercept = 0.6) 
+```
+
+
+Using a permutation test, p value is `r sum(perm_prop > 0.6)/10000`, which indicates the effect of lasso is positively significant at 5% level. See figure \@ref(fig:ltestns).
+
+
+
+Doing the same pemutation tests on all combination of the methods and reporting the p-values in table \@ref(tab:ptable).
+
+```{r}
+# value <- read.csv("value.csv")
+combi <- rep(list(unique(value$method)),2) %>% expand.grid()
+perm_m <- function(value, combi, permu = TRUE){
+  if(permu) value$value <- sample(value$value)
+  value <- spread(value, method, value)
+  po <- function(b1, b0, value){
+    out <- sum(value[b1]>value[b0])/100
+    names(out) <- paste0(gsub("^.*_", "", b1), "_test_", gsub("^.*_", "", b0))
+    return(out)
+  }
+  mapply(po, b1 = as.character(combi$Var2), b0 = as.character(combi$Var1), MoreArgs = list(value = value))
+}
+prop_orig <- perm_m(value, combi, permu = F)
+prop_perm <- replicate(1000, perm_m(value, combi))
+p_value <- (sweep(prop_perm, 1, prop_orig, ">") %>% apply(1, sum))/1000
+p_table <- matrix(p_value,4)
+colnames(p_table) <- as.character(combi$Var1[1:4])
+rownames(p_table) <- as.character(combi$Var1[1:4])
+```
+```{r ptable}
+knitr::kable(p_table, caption = "Summary of p value in permutation tests. Denote column names as methods b1, row names as b0. In each cell, the number is the p value in the permutation test with the alternative hypothesis that method b1 has better effect than b0. For example, the cell at first row second colomn means that lasso following quadratic programming has better effect than no-short-sale portifolio with p-value 0.015.")
+```
+
+In general, portfolio selected from quadratic programming followed by lasso has the best performance.  
+
+
+Average value from value function for each portifolio is reported in table \@ref(tab:mean).  
+
+```{r mean}
+apply(value_wide[-1], 2, mean) %>% knitr::kable(caption = "Average value in simulation")
+```
+
+
