@@ -24,7 +24,7 @@
 value_func <- function(updatetheta, i, theta,
                        Rt, M = NROW(Rt[[1]]), Tn = length(Rt) - 1,
                        weights, W = NULL, ValueOnly = FALSE, utility = power_u,
-                       beta = 1/1.05, consu_function = inv.logit){
+                       beta = 1/1.05, consu_function = boot::inv.logit){
 
   if(i==1 & length(W)==0){
     W <- matrix(nrow = Tn+1, ncol = M)
