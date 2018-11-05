@@ -7,6 +7,6 @@
 #'
 #' @author Yangzhuoran Yang
 #' @export
-power_u <- function(x, lambda = 0.9){
+power_u <- function(x, lambda = 0.1){
   x^(1-lambda)/(1-lambda)
 }

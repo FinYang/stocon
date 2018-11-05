@@ -2,12 +2,21 @@
 % Please edit documentation in R/weights.R
 \name{qp_weights}
 \alias{qp_weights}
-\title{no-short-sale portfolio quadratic programming}
+\title{portfolio quadratic programming for multiperiod data set}
 \usage{
-qp_weights(rt)
+qp_weights(rt, constr = 1)
+}
+\arguments{
+\item{rt}{List of return}
+
+\item{constr}{If numeric, take as the imposed constraint.
+If NULL, nu constraint. Otherwise compute proper constraint using 10-fold cross-validation}
+}
+\value{
+Weights for each periods
 }
 \description{
-no-short-sale portfolio quadratic programming
+portfolio quadratic programming for multiperiod data set
 }
 \author{
 Yangzhuoran Yang

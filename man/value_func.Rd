@@ -4,9 +4,9 @@
 \alias{value_func}
 \title{Value Function}
 \usage{
-value_func(updatetheta, i, theta, Rt, M = NROW(Rt[[1]]),
+value_func(updatetheta = NULL, i = 1, theta, Rt, M = NULL,
   Tn = length(Rt) - 1, weights, W = NULL, ValueOnly = FALSE,
-  utility = power_u, beta = 1/1.05, consu_function = inv.logit)
+  utility = power_u, beta = 1/1.05, consu_function = boot::inv.logit)
 }
 \arguments{
 \item{updatetheta}{updated theta}
@@ -34,7 +34,7 @@ value_func(updatetheta, i, theta, Rt, M = NROW(Rt[[1]]),
 \item{consu_function}{consumption has been set to inverse logit}
 }
 \value{
-list contain value and wealth (optional)
+theta
 }
 \description{
 Value Function

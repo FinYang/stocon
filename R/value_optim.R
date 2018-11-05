@@ -16,36 +16,36 @@
 #' @param beta discount factor. Currently set to be the same 1/1.05
 #' @param consu_function consumption has been set to inverse logit
 #'
-#' @return list contain value and wealth (optional)
+#' @return theta
 #' @importFrom boot inv.logit
 #' @author Yangzhuoran Yang
 #' @export
-#'
-value_func <- function(updatetheta, i, theta,
-                       Rt, M = NROW(Rt[[1]]), Tn = length(Rt) - 1,
+value_func <- function(updatetheta = NULL, i = 1, theta,
+                       Rt, M = NULL, Tn = length(Rt) - 1,
                        weights, W = NULL, ValueOnly = FALSE, utility = power_u,
                        beta = 1/1.05, consu_function = boot::inv.logit){
-
+ if(!is.matrix(Rt[[1]])) {
+   Rt <- lapply(Rt, function(x) t(matrix(x)))
+ }
+  if(length(M)==0) M <- NROW(Rt[[1]])
   if(i==1 & length(W)==0){
     W <- matrix(nrow = Tn+1, ncol = M)
     W[1,] <- 1000
   }
 
-
-
   weights_list <- weights %>% data.frame() %>% as.list()
-
-  theta[i,] <- updatetheta
+  if(length(updatetheta)!=0)   theta[i,] <- updatetheta
   Value <- numeric(M)
   consu <- matrix(nrow = Tn, ncol = M)
 
   for(t in i:Tn){
     consu[t,] <- W[t,]*consu_function(theta[t,1]+theta[t,2]*W[t,])
-    W[t+1,] <- (W[t,]-consu[t,])*(1+ t(Rt[[t]] %*% weights_list[[t]]) )
+    # W[t+1,] <- (W[t,]-consu[t,])*(1+ t(Rt[[t]] %*% weights_list[[t]]) )
+    W[t+1,] <- (W[t,]-consu[t,])*exp(t(Rt[[t]] %*% weights_list[[t]]) )
     Value <- Value + utility(consu[t,])*beta^(t-1)
   }
-  Value <- sum(Value + utility(W[NROW(W),])*beta^Tn)
-  if(ValueOnly) return(Value)
+  Value <- (Value + utility(W[NROW(W),])*beta^Tn)
+  if(ValueOnly) return(sum(Value))
   return(list(W=W,Value=Value))
 }
 
@@ -103,12 +103,37 @@ optim_dynam <- function(Rt, M = NROW(Rt[[1]]), Tn = length(Rt) - 1,
     # W <- value_func(theta[t,], i=t, theta = theta,
     #                 Rt = Rt, weights = weights, W=W, ValueOnly = F, utility = utility)$W
   }
-  w_value <- value_func(theta[1,], 1, theta, Rt, M=M, Tn=Tn,  weights, W,
-             utility = utility, ValueOnly = F, beta = beta, consu_function = consu_function)
-  return(list(theta = theta, v = w_value$Value, W = w_value$W))
+  # w_value <- value_func(theta[1,], 1, theta, Rt, M=M, Tn=Tn,  weights, W,
+  #            utility = utility, ValueOnly = F, beta = beta, consu_function = consu_function)
+  # return(list(theta = theta, v = w_value$Value, W = w_value$W))
+  return(theta = theta)
 }
 
 
+
+neg_value_raw <- function(theta, i,
+                          Rt, M = NROW(Rt[[1]]), Tn = length(Rt) - 1,
+                          weights, W = NULL, ValueOnly = T, utility = power_u,
+                          beta = 1/1.05, consu_function = inv.logit){
+  theta <- matrix(theta, ncol = 2)
+  -value_func(i=i, theta=theta,
+              Rt = Rt, weights = weights, ValueOnly = ValueOnly, utility = utility,
+              beta = beta, consu_function = consu_function)
+}
+
+optim_dynam_raw <- function(Rt, M = NROW(Rt[[1]]), Tn = length(Rt) - 1,
+                        weights,  W_ini = 1000, utility = power_u,
+                        beta = 1/1.05, consu_function = inv.logit){
+  W <- matrix(nrow = Tn+1, ncol = M)
+  W[1,] <- W_ini # initial wealth currently set to be the same
+
+  # theta  <- numeric(Tn*2) %>% matrix(ncol = 2)
+  theta <- numeric(Tn*2)
+
+  optim(theta, neg_value_raw, i=1, Rt = Rt, weights = weights, W=W,
+                       ValueOnly = TRUE, utility = utility, beta = beta,
+                       consu_function = consu_function)$par %>% matrix(ncol = 2)
+}
 
 
 # old V----

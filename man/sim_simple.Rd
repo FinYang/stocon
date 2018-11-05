@@ -5,7 +5,7 @@
 \title{Simple simulation}
 \usage{
 sim_simple(R1 = NULL, mu = NULL, vol = NULL, Tn = 10, N = 5,
-  M = 10000)
+  M = 10000, defaultsetting = TRUE)
 }
 \arguments{
 \item{R1}{Returns at time 0. Should be a M*N matrix where M and N are the number of entry and number of assets.}

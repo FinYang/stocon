@@ -119,6 +119,25 @@ qp_orig <- function(rt, constr = 1){
   qp$solution
 }
 
+#' @importFrom NlcOptim solnl
+sqp_weights <- function(rt, constr = 1){
+X <- as.matrix(rep(0.2, NCOL(rt)))
+covm <- cov(rt)
+objfun <- function(w){
+  t(w) %*% covm %*% w
+}
+confun <- function(w){
+  f <- NULL
+  f <- rbind(f, t(as.matrix(rep(1, NCOL(rt)))) %*% w -1)
+  f <- rbind(f, t(as.matrix(rep(1, NCOL(rt)))) %*% abs(w) - constr)
+  return(list(ceq = f, c=NULL))
+}
+solnl(X = X, objfun = objfun, confun = confun)
+
+
+}
+
+
 
 
 

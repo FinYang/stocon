@@ -7,8 +7,19 @@
 lasso_weights(Rt, N = NCOL(Rt[[1]]), qp_lasso = TRUE,
   qp_weights = NULL)
 }
+\arguments{
+\item{Rt}{Lists of return rt}
+
+\item{qp_lasso}{if TRUE, taking no-short-sale portfolio from quadratic programming as y in lasso}
+
+\item{qp_weights}{can supply weights of o-short-sale portfolio from quadratic programming}
+}
+\value{
+List of weights for each period
+}
 \description{
-Default using lasso after quadratic programming
+Default using lasso after quadratic programming. As a approximation to constrained risk
+minimization
 }
 \author{
 Yangzhuoran Yang

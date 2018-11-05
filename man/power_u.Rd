@@ -4,7 +4,7 @@
 \alias{power_u}
 \title{Power utility}
 \usage{
-power_u(x, lambda = 0.9)
+power_u(x, lambda = 0.1)
 }
 \description{
 Power utility
