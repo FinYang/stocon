@@ -1,0 +1,69 @@
+---
+title: "Proposal"
+header-includes:
+  - \usepackage{setspace}
+  - \usepackage{xcolor, colortbl}
+  - \usepackage{amssymb, amsmath, amsthm}
+  - \usepackage{graphicx}
+  - \usepackage{natbib}
+  - \usepackage{float}
+  - \usepackage{graphicx}
+  - \usepackage{setspace}
+  - \usepackage{algorithm}
+  - \usepackage{algorithmic} 
+  - \usepackage{epstopdf}
+fontsize: 12pt
+output: 
+  bookdown::pdf_document2:
+    toc: False
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+\newcommand{\bc}{\mathbf{c}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbf{R}}
+\newcommand{\bbeta}{\mathbf{\beta}}
+\doublespacing
+  
+Typically, we face the problem of solving 
+
+$$V_0(x_0)=\sup_{\bc_0}\E[\sum_{t=0}^{T-1}\delta^{t}u(X_t,c_t)+U(X_T)\delta^T]$$
+such that $\bc_0=\{c_0,c_1,...c_{T-1}\}$ and the state evolves according to
+
+$$X_{t+1}=g(X_t,\epsilon_t) \in \R^d$$
+
+^[In most cases, the control also affects the evolution of states. A simple change of variable condition allows us to  ``push-out"  the control of the state evolution.] exogenous shocks $\epsilon \in \R^d$.
+
+Rewriting in the Bellman equation format, we have
+$$V_t(x)=\sup_{\bc_t}u(x,c_t)+\E[V_{t+1}(X_{t+1})|X_t=x]$$
+with the boundary condition 
+$$V_T(x)=U(x).$$
+In order to solve this, the dynamic problem start at $T-1$, one needs to solve the optimization problem at each time and iterate the valuation backwards. In simple dynamic program, problems arise when the dimension $d$ is large. At each time, $t$, the $\E_t$ is conditioning  on $\sigma(X_t)$, one cannot easily derive it analytically, hence making the optimization cumbersome to solve. Numerical approximation schemes, e.g. Monte-Carlo, can be used together with dynamic problem for solving this type of problems, but its numerical performance and theoretical properties are highly dependent on the structure of the problem considered.
+
+
+Instead, we consider a single index 
+$$Y_t=s(X_t,\beta_t) \in \R$$ 
+and rewrite the Bellman equation into
+\begin{equation}
+(\#eq:single-bell)
+V_t(y)=\sup_{\bc_t,\bbeta_t}u(y,c_t)+\E[V_{t+1}(Y_{t+1})|Y_t=y] \mbox{ for } \bbeta_t=\{\beta_t,\beta_2,...,\beta_{T}\}
+\end{equation}
+with the boundary condition
+$$
+V_T(y)=U(y).
+$$
+such that 
+$$
+Y_{t+1}=s(g(X_t,\epsilon_t) ,\beta_{t+1}).
+$$
+We have now effectively reduced the d-dimensional problem into one, and know the problem becomes to finding the distribution $F_t(y;\beta_t)$ of $Y_t$ in order to evaluate the integral. Our idea is to use the empirical distribution $F^n_t(y; \beta_t)$.
+
+Suppose given this empirical distribution, the optimal controls in equation \@ref(eq:single-bell) can be solved exactly.  We would like to analysis the convergence behaviour of the resulting $V_0(x_0)^n$ to the true $V_0(x_0)$. 
+
+
+__Problem to Solve__  
+
+* Conditions for the validity of equation \@ref(eq:single-bell)
+* Given $ F^n_t$, can we evaluate $\E_t$.
