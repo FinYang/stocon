@@ -156,7 +156,7 @@ solnl(X = X, objfun = objfun, confun = confun)
 #' @export
 lasso_weights <- function(Rt, N = NCOL(Rt[[1]]), qp_lasso = TRUE, qp_weights = NULL){
   if(qp_lasso){
-    if(length(qp_weights) == 0) qp_weights <- qp_weights(Rt)
+    if(is.null(qp_weights)) qp_weights <- qp_weights(Rt)
     Rt_noshortsale <- mapply(function(Rt,w) Rt %*% w,
                                          Rt = Rt,
                                          w = as.data.frame(qp_weights))

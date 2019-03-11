@@ -1,3 +1,4 @@
+library(tidyverse)
 set.seed(22222)
 Rt <- sim_simple(Tn=10, N=5, M=1e5+1)
 rt_t <- sim_simple(Tn=10, N=5, M=1e4)

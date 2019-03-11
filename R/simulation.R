@@ -36,8 +36,8 @@ sim_simple <- function(R1=NULL, mu=NULL, vol=NULL, Tn=10, N=5, M=1e4, for_weight
   Rt <- lapply(seq_len(Tn+1), function(X) rt)
   # return at time 0
   if(length(R1 & mu & vol) == 0){
-    mu <- c(0.001, 0.0003, 0.0012, 0.0004, 0.0015) *0
-    vol <- c(0.01, 0.06, 0.03, 0.07, 0.005) *5
+    mu <- c(0.001, 0.0003, 0.0012, 0.0004, 0.0015)
+    vol <- c(0.01, 0.06, 0.03, 0.07, 0.005)
     if(for_weights){
       for(i in 1:N)
         Rt[[1]][,i] <- rnorm(M, mean = mu[i], sd = vol[i])
@@ -53,7 +53,7 @@ sim_simple <- function(R1=NULL, mu=NULL, vol=NULL, Tn=10, N=5, M=1e4, for_weight
   }
   # covariance matrix
   rho_do <- function(i,j, par=0.2){
-    exp(-par*(i-j)) %>% return()
+    exp(-par*(i-j))
   }
   rho_m <- sapply(1:N, function(i) {
     sapply(1:N, function(j) rho_do(i=i, j=j))
