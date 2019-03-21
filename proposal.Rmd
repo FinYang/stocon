@@ -112,6 +112,7 @@ $$\begin{aligned}W_{t+1}&=(W_t-C_t)(\mathbf{\beta}_t\cdot {Y}_t+(1-\beta_t)\cdot
 where we assume the comsumption is propotional to wealth and the propotion is calculated by applying inverse logit function.  
 
 <!-- The utility function is assumed to be $u(x)=\frac{x^{1-\lambda}}{1-\lambda}$. -->
+
 The utility function is assumed to be $u(x)=\log{x}$.
 
 If we write it into Bellman equation 
