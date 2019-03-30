@@ -1,0 +1,55 @@
+---
+title: "Ana_v1"
+header-includes:
+  - \usepackage{setspace}
+  - \usepackage{xcolor, colortbl}
+  - \usepackage{amssymb, amsmath, amsthm}
+  - \usepackage{graphicx}
+  - \usepackage{natbib}
+  - \usepackage{float}
+  - \usepackage{graphicx}
+  - \usepackage{setspace}
+  - \usepackage{algorithm}
+  - \usepackage{algorithmic} 
+  - \usepackage{epstopdf}
+  - \usepackage{bm}
+fontsize: 12pt
+output: 
+  bookdown::pdf_document2:
+    toc: False
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+\newcommand{\bc}{\mathbf{c}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbf{R}}
+\newcommand{\bbeta}{\mathbf{\beta}}
+\newtheorem{example}{Example}
+\doublespacing
+
+
+$$V_T(W_T) = 2\lambda W_T-W_T^2$$
+
+$$V_{T-1}(W_{T-1}) =\max_{\mathbf{C}_{T-1}, \mathbf{\beta_{T-1}}}\left[2\lambda C_{T-1}-C^2_{T-1}+E[2\lambda W_T-W_T^2]\delta\right]$$
+
+$$W_T=(W_{T-1}-C_{T-1})[1+r+\beta_{T-1}(Y_{T-1}-r)]$$
+
+$$\left\{\begin{array}{ccc} Z_t=\left(\begin{array}{c}C_t\\ \beta_t\end{array}\right), & S_t=\left(\begin{array}{c}W_t\\ Y_t\end{array}\right), & J=\left(\begin{array}{c}2\lambda\\ r\end{array}\right) \\ \Roman{1}=\left(\begin{array}{c}C_t\\ \beta_t\end{array}\right), & S_t=\left(\begin{array}{c}W_t\\ Y_t\end{array}\right), & J=\left(\begin{array}{c}2\lambda\\ r\end{array}\right)\end{array}\right.$$
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$$$$
+
