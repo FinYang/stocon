@@ -23,21 +23,21 @@ where
 * $\beta_t$ is the amount of wealth invested in the risky portfolio at time $t$
 * $C_{t+1}$ is the consumption made at time $t+1$
 
-Value function at time $0$: 
+The objective function at time $0$: 
 
-$$V_0(W_0) = \min_{\{C_t\}^T_{t=1}, \{\beta_t\}^{T-1}_{t=0}}E[\sum^{T}_{t=1}\delta^t \cdot(C^2_{t} - 2\lambda C_{t})+\delta^T\cdot (W_T^2 - 2\lambda W_T)]$$
+$$f_0(W_0) = \min_{\{C_t\}^T_{t=1}, \{\beta_t\}^{T-1}_{t=0}}E[\sum^{T}_{t=1}\delta^t \cdot(C^2_{t} - 2\lambda C_{t})+\delta^T\cdot (W_T^2 - 2\lambda W_T)]$$
 
 with terminal condition 
 
-$$V_T(W_T) =W_T^2 - 2\lambda W_T$$
+$$f_T(W_T) =W_T^2 - 2\lambda W_T$$
 
 where 
 
 * $\lambda$ is added for the convenience of calculation
 
-Value function at time $t$:
+The objective function at time $t$:
 
-$$\begin{aligned}V_t(W_t) &= \min_{\{C_s\}^T_{s=t}, \{\beta_s\}^{T-1}_{s=t}}E[\sum^{T}_{s=t+1}\delta^s \cdot(C^2_{s} - 2\lambda C_{s})+\delta^T\cdot (W_T^2 - 2\lambda W_T)]\\ &=\min_{\{C_s\}^T_{s=t}, \{\beta_s\}^{T-1}_{s=t}}E[\sum^{T}_{s=t+1}\delta^s \cdot((C_s-\lambda)^2-\lambda^2)+\delta^T\cdot ((W_T-\lambda)^2 -\lambda^2)]\end{aligned}$$
+$$\begin{aligned}f_t(W_t) &= \min_{\{C_s\}^T_{s=t}, \{\beta_s\}^{T-1}_{s=t}}E[\sum^{T}_{s=t+1}\delta^s \cdot(C^2_{s} - 2\lambda C_{s})+\delta^T\cdot (W_T^2 - 2\lambda W_T)]\\ &=\min_{\{C_s\}^T_{s=t}, \{\beta_s\}^{T-1}_{s=t}}E[\sum^{T}_{s=t+1}\delta^s \cdot((C_s-\lambda)^2-\lambda^2)+\delta^T\cdot ((W_T-\lambda)^2 -\lambda^2)]\end{aligned}$$
 
 The second equality comes from completion of squares.
 
@@ -54,9 +54,9 @@ Then the evolution of wealth becomes
 
 $$\begin{aligned}\widetilde{W}_{t+1} &=\widetilde{W}_t\cdot R^f + \beta_t(R^r_t-R^f)-c_{t+1}+(R^f-2)\cdot\lambda\end{aligned}$$
 
-After the transformation, the value function at time $t$ and terminal condition becomes 
+After the transformation, the objective function at time $t$ and terminal condition becomes 
 
-$$\left\{\begin{array}{l}V_t(W_t)=\min_{\{C_s\}^T_{s=t}, \{\beta_s\}^{T-1}_{s=t}}E[\sum^{T}_{s=t+1}\delta^{s-t} \cdot(c_s^2-\lambda^2)+\delta^{T-t}\cdot (\widetilde{W}_T^2 -\lambda^2)]\\ \\ V_T(W_T) = \widetilde{W}_T^2 - \lambda^2\end{array} \right.$$
+$$\left\{\begin{array}{l}f_t(W_t)=\min_{\{C_s\}^T_{s=t}, \{\beta_s\}^{T-1}_{s=t}}E[\sum^{T}_{s=t+1}\delta^{s-t} \cdot(c_s^2-\lambda^2)+\delta^{T-t}\cdot (\widetilde{W}_T^2 -\lambda^2)]\\ \\ f_T(W_T) = \widetilde{W}_T^2 - \lambda^2\end{array} \right.$$
 
 
 Now define
@@ -67,33 +67,54 @@ The evolution of wealth becomes
 
 $$\begin{aligned}\widetilde{W}_{t+1} &= \widetilde{W}_t\cdot R^f+J_t^\prime Z_t +(R^f-2)\cdot \lambda\end{aligned}$$
 
-The value function at time $t$ and terminal condition:
+The objective function at time $t$ and terminal condition:
 
-$$\left\{\begin{array}{l}V_t(W_t)=\min_{\{C_s\}^T_{s=t}, \{\beta_s\}^{T-1}_{s=t}}E[\sum^{T-1}_{s=t}\delta^{s+1-t} \cdot(Z_t^\prime \mathbb{I}^{22} Z_t-\lambda^2)+\delta^{T-t}\cdot (\widetilde{W}_T^2 -\lambda^2)]\\ \\ V_T(W_T) = \widetilde{W}_T^2 - \lambda^2\end{array} \right.$$
+\begin{equation}
+(\#eq:obj)
+\left\{\begin{array}{l}f_t(W_t)=\min_{\{Z_s\}^T_{s=t}}E[\sum^{T-1}_{s=t}\delta^{s+1-t} \cdot(Z_t^\prime \mathbb{I}^{22} Z_t-\lambda^2)+\delta^{T-t}\cdot (\widetilde{W}_T^2 -\lambda^2)]\\ \\ f_T(W_T) = \widetilde{W}_T^2 - \lambda^2\end{array} \right.
+\end{equation}
+
+Then the optimization problem \@ref(eq:obj) is equivalent to the following problem
+
+$$\left\{\begin{array}{l}V_t(W_t)=\min_{\{Z_s\}^T_{s=t}}E[\sum^{T-1}_{s=t}\delta^{s+1-t} Z_t^\prime \mathbb{I}^{22} Z_t+\delta^{T-t}\widetilde{W}_T^2 ]\\ \\ V_T(W_T) = \widetilde{W}_T^2\end{array} \right.$$
+
+We have $f_t(W_t) = V_t(W_t) - \lambda^2(\sum^{T-1}_{s=t}\delta^{s+1-t}+\delta^{T-t})$
 
 The Bellman equation for this problem would be
 
-$$\begin{aligned}V_t(W_t)&=\min_{\{C_s\}^T_{s=t}, \{\beta_s\}^{T-1}_{s=t}}E[\sum^{T-1}_{s=t}\delta^{s+1-t} \cdot(Z_t^\prime \mathbb{I}^{22} Z_t-\lambda^2)+\delta^{T-t}\cdot (\widetilde{W}_T^2 -\lambda^2)]\\ &=\min_{\{C_s\}^T_{s=t}, \{\beta_s\}^{T-1}_{s=t}}E[\delta \cdot(Z_t^\prime \mathbb{I}^{22} Z_t-\lambda^2)+\sum^{T-1}_{s=t+1}\delta^{s+1-t} \cdot(Z_s^\prime \mathbb{I}^{22} Z_s-\lambda^2)+\delta^{T-t}\cdot (\widetilde{W}_T^2 -\lambda^2)] \\ & =\min_{\{C_s\}^T_{s=t}, \{\beta_s\}^{T-1}_{s=t}}E[\delta \cdot(Z_t^\prime \mathbb{I}^{22} Z_t-\lambda^2)+E[\sum^{T-1}_{s=t+1}\delta^{s+1-t} \cdot(Z_s^\prime \mathbb{I}^{22} Z_s-\lambda^2)+\delta^{T-t}\cdot (\widetilde{W}_T^2 -\lambda^2)]]\\ & =\min_{\{C_s\}^T_{s=t}, \{\beta_s\}^{T-1}_{s=t}}E[\delta \cdot(Z_t^\prime \mathbb{I}^{22} Z_t-\lambda^2)+\delta \cdot E[V_{t+1}(W_{t+1})]] \end{aligned}$$
+$$\begin{aligned}V_t(W_t)&=\min_{\{Z_s\}^T_{s=t}}E[\sum^{T-1}_{s=t}\delta^{s+1-t} Z_t^\prime \mathbb{I}^{22} Z_t+\delta^{T-t}\widetilde{W}_T^2 ]\\ &=\min_{\{Z_s\}^T_{s=t}}E[\delta Z_t^\prime \mathbb{I}^{22} Z_t+\sum^{T-1}_{s=t+1}\delta^{s+1-t} Z_s^\prime \mathbb{I}^{22} Z_s+\delta^{T-t}\widetilde{W}_T^2 ] \\ & =\min_{\{Z_s\}^T_{s=t}}E[\delta Z_t^\prime \mathbb{I}^{22} Z_t+E[\sum^{T-1}_{s=t+1}\delta^{s+1-t}Z_s^\prime \mathbb{I}^{22} Z_s+\delta^{T-t}\widetilde{W}_T^2 ]]\\ & =\min_{\{Z_s\}^T_{s=t}}E[\delta Z_t^\prime \mathbb{I}^{22} Z_t+\delta \cdot E[V_{t+1}(W_{t+1})]] \end{aligned}$$
 
 The third equality comes from Law of Iterated Expection conditional on the known information at time $t$.
 
+At time $T-1$
+
+
+\begin{align}
+V_{T-1}(W_{T-1}) & =\min_{C_{T-1}, \beta_{T-1}}E[\delta Z_{T-1}^\prime \mathbb{I}^{22} Z_{T-1}+\delta \cdot E[V_{T}(W_{T})]]\notag \\ 
+&= \min_{C_{T-1}, \beta_{T-1}}E[\delta Z_{T-1}^\prime \mathbb{I}^{22} Z_{T-1}+\delta \cdot E[\widetilde{W}_T^2]](\#eq:value-T-1)
+\end{align}
+
+
 Set 
 
-$$\psi_t(W_t) = E[\delta \cdot(Z_t^\prime \mathbb{I}^{22} Z_t-\lambda^2)+\delta \cdot E[V_{t+1}(W_{t+1})]]$$
+$$\psi_{T-1}(W_{T-1}) = E[\delta Z_{T-1}^\prime \mathbb{I}^{22} Z_{T-1}+\delta \cdot E[\widetilde{W}_T^2 ]]$$
 
-At time $T-1$, we solve the FOC for the above euqation as follows
+We solve the FOC for the above euqation as follows
 
 $$\begin{aligned}\frac{\partial \psi_{T-1}(W_{T-1})}{\partial Z_{T-1}} &= 2\delta \mathbb{I}^{22}Z_{T-1}+ 2\delta E[\widetilde{W}_T\frac{\partial \widetilde{W}_T}{\partial Z_{T-1}}]\\ &=  2\delta \mathbb{I}^{22}Z_{T-1}+ 2\delta E[(\widetilde{W}_{T-1}\cdot R^f+J_{T-1}^\prime Z_{T-1} +(R^f-2)\cdot \lambda)J_{T-1}] \end{aligned}$$
 
-$$Z^\ast_{T-1} = -(\mathbb{I}^{22}+E[J_{T-1}J_{T-1}^\prime])^{-1}(\widetilde{W}_{T-1}R^fE[J_{T-1}]+(R^f-2) \lambda E[J_{T-1}])$$
+\begin{equation}
+(\#eq:sol-T-1)
+Z_{T-1} = -(\mathbb{I}^{22}+E[J_{T-1}J_{T-1}^\prime])^{-1}(\widetilde{W}_{T-1}R^fE[J_{T-1}]+(R^f-2) \lambda E[J_{T-1}])
+\end{equation}
 
-Which is the solution at $T-1$, provided $\mathbb{I}^{22}+E[J_{T-1}J_{T-1}^\prime]$ is invertible where
+which is the solution at $T-1$, provided $\mathbb{I}^{22}+E[J_{T-1}J_{T-1}^\prime]$ is invertible where
 
 $$J_{T-1}J_{T-1}^\prime = \left[\begin{array}{c}R^r_{T-1} - R^f\\ -1\end{array}\right]\left[\begin{array}{cc}R^r_{T-1} - R^f&-1\end{array}\right] = \left[\begin{array}{cc}(R^r_{T-1} - R^f)^2&-(R^r_{T-1} - R^f)\\ -(R^r_{T-1} - R^f)&1\end{array}\right]$$
 
+Substituting \@ref(eq:sol-T-1) into \@ref(eq:value-T-1) and simplifying it, we obtain
 
-
-
+$$\begin{aligned}&V_{T-1}(W_{T-1})\\ &= E[\delta \cdot((\mathbb{I}^{22}+E[J_{T-1}J_{T-1}^\prime])^{-1}(\widetilde{W}_{T-1}R^fE[J_{T-1}]+(R^f-2) \lambda E[J_{T-1}])^\prime \mathbb{I}^{22} (\mathbb{I}^{22}+E[J_{T-1}J_{T-1}^\prime])^{-1}(\widetilde{W}_{T-1}R^fE[J_{T-1}]+(R^f-2) \lambda E[J_{T-1}])-\lambda^2) \\ &\ +\delta \cdot E[(\widetilde{W}_{T-1}\cdot R^f+J_{T-1}^\prime Z_{T-1} +(R^f-2)\cdot \lambda)^2 - \lambda^2]]\end{aligned}$$
 
 
 
