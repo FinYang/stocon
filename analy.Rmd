@@ -1,0 +1,95 @@
+---
+title: "Analytical Solution with Independent Return"
+header-includes:
+  - \usepackage{amssymb, amsmath, amsthm}
+fontsize: 12pt
+output: 
+  bookdown::pdf_document2:
+    toc: False
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+$W_t$ is the wealth just after consumption is deducted from the portfolio. Its evolution follows
+
+$$\begin{aligned}W_{t+1} &= (W_t-\beta_t)\cdot R^f +\beta_t \cdot R^r_t - C_{t+1}\\ &=W_t\cdot R^f + \beta_t(R^r_t-R^f)-C_{t+1}\end{aligned}$$
+
+where
+
+* $R^f$ is the accumulation factor for risk free asset from time $t$ to $t+1$
+* $R^r_t$ is the accumulation factor for the risky portfolio from time $t$ to $t+1$
+* $\beta_t$ is the amount of wealth invested in the risky portfolio at time $t$
+* $C_{t+1}$ is the consumption made at time $t+1$
+
+Value function at time $0$: 
+
+$$V_0(W_0) = \min_{\{C_t\}^T_{t=1}, \{\beta_t\}^{T-1}_{t=0}}E[\sum^{T}_{t=1}\delta^t \cdot(C^2_{t} - 2\lambda C_{t})+\delta^T\cdot (W_T^2 - 2\lambda W_T)]$$
+
+with terminal condition 
+
+$$V_T(W_T) =W_T^2 - 2\lambda W_T$$
+
+where 
+
+* $\lambda$ is added for the convenience of calculation
+
+Value function at time $t$:
+
+$$\begin{aligned}V_t(W_t) &= \min_{\{C_s\}^T_{s=t}, \{\beta_s\}^{T-1}_{s=t}}E[\sum^{T}_{s=t+1}\delta^s \cdot(C^2_{s} - 2\lambda C_{s})+\delta^T\cdot (W_T^2 - 2\lambda W_T)]\\ &=\min_{\{C_s\}^T_{s=t}, \{\beta_s\}^{T-1}_{s=t}}E[\sum^{T}_{s=t+1}\delta^s \cdot((C_s-\lambda)^2-\lambda^2)+\delta^T\cdot ((W_T-\lambda)^2 -\lambda^2)]\end{aligned}$$
+
+The second equality comes from completion of squares.
+
+
+<!-- $$\left\{\begin{array}{ccc} Z_t=\left(\begin{array}{c}C_t\\ \beta_t\end{array}\right), & S_t=\left(\begin{array}{c}W_t\\ Y_t\end{array}\right), & J=\left(\begin{array}{c}2\lambda\\ r\end{array}\right) \\ \Roman{1}=\left(\begin{array}{c}C_t\\ \beta_t\end{array}\right), & S_t=\left(\begin{array}{c}W_t\\ Y_t\end{array}\right), & J=\left(\begin{array}{c}2\lambda\\ r\end{array}\right)\end{array}\right.$$ -->
+
+Define
+
+$$\widetilde{W_t} = W_t - \lambda\ \ \ \ \ \ \ \ c_t=C_t-\lambda$$
+
+
+
+Then the evolution of wealth becomes
+
+$$\begin{aligned}\widetilde{W}_{t+1} &=\widetilde{W}_t\cdot R^f + \beta_t(R^r_t-R^f)-c_{t+1}+(R^f-2)\cdot\lambda\end{aligned}$$
+
+After the transformation, the value function at time $t$ and terminal condition becomes 
+
+$$\left\{\begin{array}{l}V_t(W_t)=\min_{\{C_s\}^T_{s=t}, \{\beta_s\}^{T-1}_{s=t}}E[\sum^{T}_{s=t+1}\delta^{s-t} \cdot(c_s^2-\lambda^2)+\delta^{T-t}\cdot (\widetilde{W}_T^2 -\lambda^2)]\\ \\ V_T(W_T) = \widetilde{W}_T^2 - \lambda^2\end{array} \right.$$
+
+
+Now define
+
+$$J_t = \left[\begin{array}{c}R^r_t-R^f\\ -1\end{array}\right]\ \ \ \ \ Z_t = \left[\begin{array}{c}\beta_t\\ c_{t+1}\end{array}\right]\ \ \ \ \ \mathbb{I}^{22} = \left[\begin{array}{cc}0 & 0\\ 0 & 1\end{array}\right]$$
+
+The evolution of wealth becomes
+
+$$\begin{aligned}\widetilde{W}_{t+1} &= \widetilde{W}_t\cdot R^f+J_t^\prime Z_t +(R^f-2)\cdot \lambda\end{aligned}$$
+
+The value function at time $t$ and terminal condition:
+
+$$\left\{\begin{array}{l}V_t(W_t)=\min_{\{C_s\}^T_{s=t}, \{\beta_s\}^{T-1}_{s=t}}E[\sum^{T-1}_{s=t}\delta^{s+1-t} \cdot(Z_t^\prime \mathbb{I}^{22} Z_t-\lambda^2)+\delta^{T-t}\cdot (\widetilde{W}_T^2 -\lambda^2)]\\ \\ V_T(W_T) = \widetilde{W}_T^2 - \lambda^2\end{array} \right.$$
+
+The Bellman equation for this problem would be
+
+$$\begin{aligned}V_t(W_t)&=\min_{\{C_s\}^T_{s=t}, \{\beta_s\}^{T-1}_{s=t}}E[\sum^{T-1}_{s=t}\delta^{s+1-t} \cdot(Z_t^\prime \mathbb{I}^{22} Z_t-\lambda^2)+\delta^{T-t}\cdot (\widetilde{W}_T^2 -\lambda^2)]\\ &=\min_{\{C_s\}^T_{s=t}, \{\beta_s\}^{T-1}_{s=t}}E[\delta \cdot(Z_t^\prime \mathbb{I}^{22} Z_t-\lambda^2)+\sum^{T-1}_{s=t+1}\delta^{s+1-t} \cdot(Z_s^\prime \mathbb{I}^{22} Z_s-\lambda^2)+\delta^{T-t}\cdot (\widetilde{W}_T^2 -\lambda^2)] \\ & =\min_{\{C_s\}^T_{s=t}, \{\beta_s\}^{T-1}_{s=t}}E[\delta \cdot(Z_t^\prime \mathbb{I}^{22} Z_t-\lambda^2)+E[\sum^{T-1}_{s=t+1}\delta^{s+1-t} \cdot(Z_s^\prime \mathbb{I}^{22} Z_s-\lambda^2)+\delta^{T-t}\cdot (\widetilde{W}_T^2 -\lambda^2)]]\\ & =\min_{\{C_s\}^T_{s=t}, \{\beta_s\}^{T-1}_{s=t}}E[\delta \cdot(Z_t^\prime \mathbb{I}^{22} Z_t-\lambda^2)+\delta \cdot E[V_{t+1}(W_{t+1})]] \end{aligned}$$
+
+The third equality comes from Law of Iterated Expection conditional on the known information at time t
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
