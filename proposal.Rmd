@@ -87,6 +87,7 @@ R_{1t}  =\mu_p+\sum_{i=2}^{q}w_{i}X_{it}+\epsilon_t
 where $X_{it}=R_{1t}-R_{it}$.
 Under our general setup, $Y_t=\hat{\mathbf{w}}'\mathbf{R}_t$ where $\hat{\mathbf{w}}$ is a OLS estimator for $\mathbf{w}$ in \@ref(eq:port-index). 
 
+\pagebreak
 
 $$V_0(x_0)=\sup_{\mathbf{c}_0, \mathbf{\beta}_0}\mathbf{E}[u(C_0(W_0, c_0))+\sum_{j=1}^{T-1}u(C_j({W}_j(\mathbf\beta_{j-1}, \mathbf{R}_{j-1}, \mathbf\omega_{j-1}, r_f),c_j))\delta^{j} + u(W_T(\mathbf\beta_{T-1}, \mathbf{R}_{T-1}, \mathbf\omega_{T-1}, r_f))\delta^T]$$
 
