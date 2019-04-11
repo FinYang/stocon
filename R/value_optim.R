@@ -45,7 +45,7 @@ value_func <- function(updatetheta = NULL, i = 1, theta,
     W[t+1,] <- (W[t,]-consu[t,])* t(exp(Rt[[t]]) %*% weights_list[[t]])
     Value <- Value + utility(consu[t,])*beta^(t-1)
   }
-  Value <- (Value + utility(W[NROW(W),])*beta^Tn)
+  Value <- (Value + utility(W[NROW(W),])*beta^Tn) #!!!!!!!BUG!!!!!!!!!!Tn-i
   if(ValueOnly) return(sum(Value))
   return(list(W=W,Value=Value))
 }
