@@ -5,6 +5,7 @@ Tn <- 10
 N <- 5
 M <- 1e4
 
+step1 <- function(){
 rt <- matrix(nrow=M, ncol=N)
 Rt <- lapply(seq_len(Tn), function(X) rt)
 mu <- c(0.01, 0.003, 0.012, 0.004, 0.015)
@@ -31,12 +32,13 @@ for(t in 2:Tn){
 
 Rt <- Rt %>%
   lapply(function(x) x+1) # simulated return for each resky assets
-
+return(Rt)
+}
 
 
 
 ## EM
-
+step2 <- function(Rt){
 lm_weight <- function(Rt){
   reg_data <- cbind(Rt[,1], Rt[,1] - Rt[,2:NCOL(Rt)])
   model <- lm(reg_data[,1]~reg_data[,-1])
@@ -48,14 +50,17 @@ weights <- sapply(Rt, lm_weight)
 
 
 Rr <- mapply(function(Rt, omega) Rt %*% omega, Rt = Rt, omega = as.data.frame(weights))
+return(Rr)
+}
+
 Rf <- 1.01
 W <- matrix(nrow = M, ncol = Tn+1)
 W[,1] <- 1000
 
 
 value_varmean <- function(update_par = NULL, i = 1, para, Rr, Rf,
-                       M = NROW(Rr), Tn = NCOL(Rr), W, discount=1/1.05,
-                       lambda = 1/2, returnW = FALSE){
+                          M = NROW(Rr), Tn = NCOL(Rr), W, discount=1/1.05,
+                          lambda = 1/2, returnW = FALSE){
   if(!is.null(update_par)) para[i, ] <- update_par
   beta <- para[ ,1]
   C <- para[ ,2]
@@ -74,8 +79,7 @@ value_varmean <- function(update_par = NULL, i = 1, para, Rr, Rf,
 dytim <- function(Rr, Rf, valuefunction = value_varmean, M = NROW(Rr),
                   Tn = NCOL(Rr),
                   ini_W = 1000, discount=1/1.05,
-                  lambda = 1/2){
-  para <- matrix(0,nrow = Tn, ncol = 2)
+                  lambda = 1/2, para = matrix(0,nrow = Tn, ncol = 2)){
   W <- matrix(nrow = M, ncol = Tn+1)
   W[,1] <- ini_W
   W <- valuefunction(para = para, Rr = Rr, Rf = Rf, W = W,
@@ -83,12 +87,24 @@ dytim <- function(Rr, Rf, valuefunction = value_varmean, M = NROW(Rr),
                      returnW = TRUE)
   for(t in Tn:1){
     para[t,] <- optim(par = para[t,], fn = valuefunction, i=t, para = para,
-                     Rr = Rr, Rf = Rf, W = W,
-                     M = M, Tn = Tn, discount = discount, lambda = lambda)$par
+                      Rr = Rr, Rf = Rf, W = W,
+                      M = M, Tn = Tn, discount = discount, lambda = lambda)$par
   }
   colnames(para) <- c("beta", "C")
-  return(para)
+  value <- valuefunction(para = para, Rr = Rr, Rf = Rf, W = W,
+                         M = M, Tn = Tn, discount = discount, lambda = lambda)
+  return(list(para, value))
 }
 
-dytim(Rr, Rf)
+pm <- NULL
 
+Rt <- step1()
+Rr <- step2(Rt)
+pm[[1]] <- dytim(Rr, Rf)
+for(it in 2:100){
+Rt <- step1()
+Rr <- step2(Rt)
+pm[[it]] <- dytim(Rr, Rf, para = pm[[it-1]][[1]])
+}
+v <- sapply(pm, function(x) x[[2]])
+qplot(y= v, x=seq_along(v), geom = "line")
