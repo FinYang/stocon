@@ -106,10 +106,10 @@ pm <- NULL
 Rt <- step1()
 # Rr <- step2(Rt)
 pm[[1]] <- dytim(Rt, Rf)
-for(it in 2:100){
+for(it in 2:10){
   Rt <- step1()
   # Rr <- step2(Rt)
   pm[[it]] <- dytim(Rt, Rf, para = pm[[it-1]][[1]])
 }
 v <- sapply(pm, function(x) x[[2]])
-qplot(y= v, x=seq_along(v), geom = "line")
+qplot(y= v, x=seq_along(v), geom = "line") + geom_line(aes(y=v, x=x, color = "red"), data = data.frame(v=v100, x=seq_along(v100)))

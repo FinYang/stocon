@@ -6,51 +6,51 @@ N <- 5
 M <- 1e4
 
 step1 <- function(){
-rt <- matrix(nrow=M, ncol=N)
-Rt <- lapply(seq_len(Tn), function(X) rt)
-mu <- c(0.01, 0.003, 0.012, 0.004, 0.015)
-vol <- c(0.01, 0.06, 0.03, 0.07, 0.005)
-for(i in 1:N)
-  Rt[[1]][,i] <- rnorm(M, mean = mu[i], sd = vol[i])
-rho_do <- function(i,j, par=0.2){
-  exp(-par*(i-j))
-}
-rho_m <- sapply(1:N, function(i) {
-  sapply(1:N, function(j) rho_do(i=i, j=j))
-})
-rho_m[lower.tri(rho_m, TRUE)] <- 0
-rho_m <- rho_m + t(rho_m) + diag(rep(1, N))
+  rt <- matrix(nrow=M, ncol=N)
+  Rt <- lapply(seq_len(Tn), function(X) rt)
+  mu <- c(0.01, 0.003, 0.012, 0.004, 0.015)
+  vol <- c(0.01, 0.06, 0.03, 0.07, 0.005)
+  for(i in 1:N)
+    Rt[[1]][,i] <- rnorm(M, mean = mu[i], sd = vol[i])
+  rho_do <- function(i,j, par=0.2){
+    exp(-par*(i-j))
+  }
+  rho_m <- sapply(1:N, function(i) {
+    sapply(1:N, function(j) rho_do(i=i, j=j))
+  })
+  rho_m[lower.tri(rho_m, TRUE)] <- 0
+  rho_m <- rho_m + t(rho_m) + diag(rep(1, N))
 
-varcov <- vol %*% t(vol) * rho_m
-A <- chol(varcov)
-# -
+  varcov <- vol %*% t(vol) * rho_m
+  A <- chol(varcov)
+  # -
 
-for(t in 2:Tn){
-  Z <- matrix(rnorm(M*N), ncol=N)
-  Rt[[t]] <- Rt[[t-1]] + t(replicate(M,mu)) +  Z %*% A
-}
+  for(t in 2:Tn){
+    Z <- matrix(rnorm(M*N), ncol=N)
+    Rt[[t]] <- Rt[[t-1]] + t(replicate(M,mu)) +  Z %*% A
+  }
 
-Rt <- Rt %>%
-  lapply(function(x) x+1) # simulated return for each resky assets
-return(Rt)
+  Rt <- Rt %>%
+    lapply(function(x) x+1) # simulated return for each resky assets
+  return(Rt)
 }
 
 
 
 ## EM
 step2 <- function(Rt){
-lm_weight <- function(Rt){
-  reg_data <- cbind(Rt[,1], Rt[,1] - Rt[,2:NCOL(Rt)])
-  model <- lm(reg_data[,1]~reg_data[,-1])
-  weights <- c(1-sum(coef(model)[-1]), coef(model)[-1])
-  names(weights) <- NULL
-  return(weights)
-}
-weights <- sapply(Rt, lm_weight)
+  lm_weight <- function(Rt){
+    reg_data <- cbind(Rt[,1], Rt[,1] - Rt[,2:NCOL(Rt)])
+    model <- lm(reg_data[,1]~reg_data[,-1])
+    weights <- c(1-sum(coef(model)[-1]), coef(model)[-1])
+    names(weights) <- NULL
+    return(weights)
+  }
+  weights <- sapply(Rt, lm_weight)
 
 
-Rr <- mapply(function(Rt, omega) Rt %*% omega, Rt = Rt, omega = as.data.frame(weights))
-return(Rr)
+  Rr <- mapply(function(Rt, omega) Rt %*% omega, Rt = Rt, omega = as.data.frame(weights))
+  return(Rr)
 }
 
 Rf <- 1.01
@@ -102,9 +102,9 @@ Rt <- step1()
 Rr <- step2(Rt)
 pm[[1]] <- dytim(Rr, Rf)
 for(it in 2:100){
-Rt <- step1()
-Rr <- step2(Rt)
-pm[[it]] <- dytim(Rr, Rf, para = pm[[it-1]][[1]])
+  Rt <- step1()
+  Rr <- step2(Rt)
+  pm[[it]] <- dytim(Rr, Rf, para = pm[[it-1]][[1]])
 }
 v <- sapply(pm, function(x) x[[2]])
 qplot(y= v, x=seq_along(v), geom = "line")
