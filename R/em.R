@@ -1,7 +1,7 @@
 library(tidyverse)
 
 
-Tn <- 10
+Tn <- 5
 N <- 5
 M <- 1e4
 
@@ -53,13 +53,13 @@ simulate_riskys <- function(){
 # return(Rr)
 # }
 
-Rf <- 1.01
+Rf <- 1.02
 W <- matrix(nrow = M, ncol = Tn+1)
 W[,1] <- 1000
 
 
 value_varmean <- function(update_par = NULL, i = 1, para, Rt, Rf,
-                          M = NROW(Rt[[1]]), Tn = length(Rt), W, discount=1/1.05,
+                          M = NROW(Rt[[1]]), Tn = length(Rt), W, discount=1/1.01,
                           lambda = 1/2, returnW = FALSE){
   if(!is.null(update_par)) para[i, ] <- update_par
   beta <- para[ ,1]
@@ -79,7 +79,7 @@ value_varmean <- function(update_par = NULL, i = 1, para, Rt, Rf,
 
 dytim <- function(Rt, Rf, valuefunction = value_varmean, M = NROW(Rt[[1]]),
                   Tn = length(Rt),
-                  ini_W = 1000, discount=1/1.05,
+                  ini_W = 1000, discount=1/1.01,
                   lambda = 1/2, para = NULL){
   if(is.null(para)){
     para <- matrix(0,nrow = Tn, ncol = 2+NCOL(Rt[[1]]))
@@ -112,5 +112,7 @@ for(it in 2:100){
   pm[[it]] <- dytim(Rt, Rf, para = pm[[it-1]][[1]])
 }
 v <- sapply(pm, function(x) x[[2]])
+saveRDS(pm, "em_estimation.rds")
 qplot(y= v, x=seq_along(v), geom = "line")
+plotly::ggplotly()
 # + geom_line(aes(y=v, x=x, color = "red"), data = data.frame(v=v100, x=seq_along(v100)))

@@ -1,5 +1,7 @@
 library(tidyverse)
 
+discount = 1/1.01
+lambda = 1/2
 
 Tn <- 5
 N <- 5
@@ -27,7 +29,7 @@ simulate_riskys <- function(){
 
   for(t in 2:Tn){
     Z <- matrix(rnorm(M*N), ncol=N)
-    Rt[[t]] <- Rt[[t-1]] + t(replicate(M,mu)) +  Z %*% A
+    Rt[[t]] <- Rt[[t-1]]  +  Z %*% A #+t(replicate(M,mu))
   }
 
   Rt <- Rt %>%
@@ -52,21 +54,23 @@ get_Rr <- function(Rt){
 
 Rt <- simulate_riskys()
 Rr <- get_Rr(Rt)
-Rf <- 1.01
+Rf <- 1.02
 W <- matrix(nrow = M, ncol = Tn+1)
 W[,1] <- 1000
 
 # First element in J
-J1 <- Rr-Rf
+J1 <- (Rr-Rf) %>% split(rep(1:ncol(.), each = nrow(.)))
+Jt <- lapply(J1, function(J1) lapply(J1, function(J1) matrix(c(J1, -1), 2)))
 # J1t <- split(J1, rep(1:ncol(J1), each = nrow(J1)))
-mean_J <- matrix(colMeans(J_1), nrow = 2, ncol = 10, byrow = TRUE)
+# test_meanJ <- lapply(Jt, function(Jt) matrix(rowMeans(do.call(cbind, Jt)), 2))
+mean_J <- matrix(colMeans(Rr-Rf), nrow = 2, ncol = Tn, byrow = TRUE)
 mean_J[2,] <- -1
 mean_J <-  split(mean_J, rep(1:ncol(mean_J), each = nrow(mean_J))) %>%
   lapply(matrix)
 
 ## JJ
-JJ1 <- J1^2
-JJ2 <- -J1
+JJ1 <- (Rr-Rf)^2
+JJ2 <- -(Rr-Rf)
 
 mean_JJ1 <- colMeans(JJ1)
 mean_JJ2 <- colMeans(JJ2)
@@ -98,27 +102,34 @@ get_Vt <- function(Wt, Dt, Gt, Ft){
   Wt^2*Dt + 2*Wt*Gt + Ft
 }
 # Solution of control
-get_Zt <- function(Wt, Ht, Dt1, Rf, lambda, mean_J){
-  lapply(Wt,function(Wt) -(Dt1 * (Wt*Rf + (Rf-2)*lambda)) * solve(Ht) %*% mean_J)
+get_Zt <- function(Wt, Ht, Dt1, Gt1, Rf, lambda, mean_J){
+  lapply(Wt,function(Wt) -(Dt1 * (Wt*Rf + (Rf-2)*lambda) +Gt1) * solve(Ht) %*% mean_J)
   # -solve(Ht) %*% (Dt1 * (Wt*Rf + (Rf-2)*lambda)) %*% mean_J
 }
 # Evolution of Wt
 evo_Wt <- function(Wt, Rf, lambda, Jt, Zt){
-  mapply(function(Jt, Zt) Wt*Rf +(Rf-2)*lambda + t(Jt) %*% Zt, Jt = Jt, Zt = Zt, SIMPLIFY = FALSE)
-  # GET Jt!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  #
-  #
-  #
-
-
-
+  mapply(function(Wt, Jt, Zt) c(Wt*Rf +(Rf-2)*lambda + t(Jt) %*% Zt),Wt = Wt, Jt = Jt, Zt = Zt, SIMPLIFY = FALSE)
 }
 # 0 : Tn-1
 Vt <- vector("list", Tn)
 Zt <- vector("list", Tn)
 for(i in 1:Tn){
   Vt[[i]] <- get_Vt(Wt = Wt[[i]], Dt = Dt[[i]], Gt = Gt[[i]], Ft = Ft[[i]])
-  Zt[[i]] <- get_Zt(Wt = Wt[[i]], Ht = Ht[[i]], Dt1 = Dt[[i+1]], Rf = Rf, lambda = lambda, mean_J = mean_J[[i]])
-  Wt[[i+1]] <- Wt[[i]] * Rf + (Rf-2)*lambda + J
+  Zt[[i]] <- get_Zt(Wt = Wt[[i]], Ht = Ht[[i]], Dt1 = Dt[[i+1]], Gt1 = Gt[[i+1]], Rf = Rf, lambda = lambda, mean_J = mean_J[[i]])
+  Wt[[i+1]] <- do.call(c,evo_Wt(Wt = Wt[[i]], Rf = Rf,lambda = lambda, Jt =Jt[[i]], Zt = Zt[[i]]))
 }
-V <- mapply(get_Vt, Wt = as.data.frame(Wt), Dt = Dt, Gt = Gt, Ft = Ft, SIMPLIFY = FALSE)
+# V <- mapply(get_Vt, Wt = as.data.frame(Wt), Dt = Dt, Gt = Gt, Ft = Ft, SIMPLIFY = FALSE)
+
+
+adi <- discount^(1:Tn)
+cumu_adi <- rev(cumsum(adi))
+adii <- cumu_adi +rev(adi)
+ft <- sapply(Vt, mean)-lambda^2*adii
+
+
+
+
+
+
+
+
