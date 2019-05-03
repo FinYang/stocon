@@ -5,7 +5,7 @@ Tn <- 10
 N <- 5
 M <- 1e4
 
-step1 <- function(){
+simulate_riskys <- function(){
   rt <- matrix(nrow=M, ncol=N)
   Rt <- lapply(seq_len(Tn), function(X) rt)
   mu <- c(0.01, 0.003, 0.012, 0.004, 0.015)
@@ -38,7 +38,7 @@ step1 <- function(){
 
 
 ## EM
-step2 <- function(Rt){
+get_Rr <- function(Rt){
   lm_weight <- function(Rt){
     reg_data <- cbind(Rt[,1], Rt[,1] - Rt[,2:NCOL(Rt)])
     model <- lm(reg_data[,1]~reg_data[,-1])
@@ -98,12 +98,12 @@ dytim <- function(Rr, Rf, valuefunction = value_varmean, M = NROW(Rr),
 
 pm <- NULL
 
-Rt <- step1()
-Rr <- step2(Rt)
+Rt <- simulate_riskys()
+Rr <- get_Rr(Rt)
 pm[[1]] <- dytim(Rr, Rf)
 for(it in 2:100){
-  Rt <- step1()
-  Rr <- step2(Rt)
+  Rt <- simulate_riskys()
+  Rr <- get_Rr(Rt)
   pm[[it]] <- dytim(Rr, Rf, para = pm[[it-1]][[1]])
 }
 v <- sapply(pm, function(x) x[[2]])

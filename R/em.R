@@ -5,7 +5,7 @@ Tn <- 10
 N <- 5
 M <- 1e4
 
-step1 <- function(){
+simulate_riskys <- function(){
   rt <- matrix(nrow=M, ncol=N)
   Rt <- lapply(seq_len(Tn), function(X) rt)
   mu <- c(0.01, 0.003, 0.012, 0.004, 0.015)
@@ -103,13 +103,14 @@ dytim <- function(Rt, Rf, valuefunction = value_varmean, M = NROW(Rt[[1]]),
 
 pm <- NULL
 
-Rt <- step1()
+Rt <- simulate_riskys()
 # Rr <- step2(Rt)
 pm[[1]] <- dytim(Rt, Rf)
-for(it in 2:10){
-  Rt <- step1()
+for(it in 2:100){
+  Rt <- simulate_riskys()
   # Rr <- step2(Rt)
   pm[[it]] <- dytim(Rt, Rf, para = pm[[it-1]][[1]])
 }
 v <- sapply(pm, function(x) x[[2]])
-qplot(y= v, x=seq_along(v), geom = "line") + geom_line(aes(y=v, x=x, color = "red"), data = data.frame(v=v100, x=seq_along(v100)))
+qplot(y= v, x=seq_along(v), geom = "line")
+# + geom_line(aes(y=v, x=x, color = "red"), data = data.frame(v=v100, x=seq_along(v100)))
