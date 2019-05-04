@@ -53,7 +53,8 @@ simulate_riskys <- function(){
 # return(Rr)
 # }
 
-Rf <- 1.02
+Rf <- 1.01
+discount <- 1/1.05
 W <- matrix(nrow = M, ncol = Tn+1)
 W[,1] <- 1000
 
@@ -105,11 +106,11 @@ pm <- NULL
 
 Rt <- simulate_riskys()
 # Rr <- step2(Rt)
-pm[[1]] <- dytim(Rt, Rf)
+pm[[1]] <- dytim(Rt, Rf, discount = discount)
 for(it in 2:100){
   Rt <- simulate_riskys()
   # Rr <- step2(Rt)
-  pm[[it]] <- dytim(Rt, Rf, para = pm[[it-1]][[1]])
+  pm[[it]] <- dytim(Rt, Rf, para = pm[[it-1]][[1]], discount = discount)
 }
 v <- sapply(pm, function(x) x[[2]])
 saveRDS(pm, "em_estimation.rds")

@@ -1,6 +1,6 @@
 library(tidyverse)
 
-discount = 1/1.01
+discount = 1/1.05
 lambda = 1/2
 
 Tn <- 5
@@ -29,7 +29,7 @@ simulate_riskys <- function(){
 
   for(t in 2:Tn){
     Z <- matrix(rnorm(M*N), ncol=N)
-    Rt[[t]] <- Rt[[t-1]]  +  Z %*% A #+t(replicate(M,mu))
+    Rt[[t]] <- Rt[[t-1]]  +  Z %*% A +t(replicate(M,mu))
   }
 
   Rt <- Rt %>%
@@ -54,9 +54,20 @@ get_Rr <- function(Rt){
 
 Rt <- simulate_riskys()
 Rr <- get_Rr(Rt)
-Rf <- 1.02
+
+
+# single Rr ---------------------------------------------------------------
+
+
+
+
+Rf <- 1.01
 W <- matrix(nrow = M, ncol = Tn+1)
 W[,1] <- 1000
+
+
+# about J -----------------------------------------------------------------
+
 
 # First element in J
 J1 <- (Rr-Rf) %>% split(rep(1:ncol(.), each = nrow(.)))
@@ -75,6 +86,22 @@ JJ2 <- -(Rr-Rf)
 mean_JJ1 <- colMeans(JJ1)
 mean_JJ2 <- colMeans(JJ2)
 mean_JJ <- mapply(function(JJ1, JJ2) matrix(c(JJ1, JJ2, JJ2, 1), 2), JJ1 = mean_JJ1, JJ2  = mean_JJ2, SIMPLIFY = F)
+
+
+
+# single Rr ---------------------------------------------------------------
+mean_Rr <- 1.05
+sd_Rr <- 0.03
+
+
+mean_J1 <- mean_Rr - Rf
+mean_J <- replicate(Tn,list(matrix(c(mean_J1, -1), 2)))
+
+mean_JJ <- matrix(c((mean_J1^2+sd_Rr^2), -(mean_Rr-Rf), -(mean_Rr-Rf), 1), 2)
+mean_JJ <- replicate(Tn,list(mean_JJ))
+
+# HDGF --------------------------------------------------------------------
+
 
 # H  0 : Tn-1 = Tn
 # D  0 : Tn   = Tn+1
