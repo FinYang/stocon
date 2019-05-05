@@ -74,20 +74,19 @@ sd_Rr <- 0.03
 Rr <- replicate(Tn,  matrix(rnorm(M, mean_Rr, sd_Rr), ncol = 1), simplify = F)
 
 pm[[1]] <- dytim(Rr, Rf, discount = discount)
-pb <- txtProgressBar(min = 2, max = 100, style = 3)
+pb <- txtProgressBar(min = 1, max = 100, style = 3)
 for(it in 2:100){
   Rr <- replicate(Tn,  matrix(rnorm(M, mean_Rr, sd_Rr), ncol = 1), simplify = F)
   # Rr <- step2(Rr)
-  pm[[it]] <-
-    try(dytim(Rr, Rf, para = pm[[it-1]][[1]], discount = discount))
+  pm[[it]] <- dytim(Rr, Rf, para = pm[[it-1]][[1]], discount = discount)
   setTxtProgressBar(pb, it)
 }
 v <- sapply(pm, function(x) x[[2]])
-# saveRDS(pm, "em_estimation.rds")
+saveRDS(pm, "em_single_asset.rds")
 qplot(y= v, x=seq_along(v), geom = "line")
 plotly::ggplotly()
 # + geom_line(aes(y=v, x=x, color = "red"), data = data.frame(v=v100, x=seq_along(v100)))
 
 
-value_varmean(para = pm[[100]][[1]], Rr = Rr, Rf = Rf, W = W,
-  M = M, Tn = Tn, discount = discount, lambda = lambda)
+# value_varmean(para = pm[[100]][[1]], Rr = Rr, Rf = Rf, W = W,
+#   M = M, Tn = Tn, discount = discount, lambda = lambda)

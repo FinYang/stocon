@@ -76,12 +76,12 @@ V0 <- get_Vt(Wt = Wt[[1]], Dt = Dt[[1]], Gt = Gt[[1]], Ft = Ft[[1]])
 # }
 # V <- mapply(get_Vt, Wt = as.data.frame(Wt), Dt = Dt, Gt = Gt, Ft = Ft, SIMPLIFY = FALSE)
 
-
+#
 adi <- discount^(1:Tn)
 cumu_adi <- rev(cumsum(adi))
 adii <- cumu_adi +rev(adi)
-ft <- sapply(Vt, mean)-lambda^2*adii
-
+# ft <- sapply(Vt, mean)-lambda^2*adii
+V0 <- V0-adii[[1]]
 
 
 
