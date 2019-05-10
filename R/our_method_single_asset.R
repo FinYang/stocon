@@ -47,7 +47,7 @@ for(i in Tn:1){
 }
 
 Wt <- W[1,] - lambda
-Wt <- split(Wt, rep(1:length(Wt), each = nrow(Wt)))
+Wt <- split(Wt, rep(1:length(Wt), each = length(Wt)))
 # Solution of value function
 get_Vt <- function(Wt, Dt, Gt, Ft){
   Wt^2*Dt + 2*Wt*Gt + Ft
