@@ -1,12 +1,14 @@
 Package: stocon
-Title: What the Package Does (one line, title case)
+Title: Portfolio selection in a Stochastic control setting
 Version: 0.0.0.9000
-Authors@R: person("Yangzhuoran", "Yang", email = "Fin.Yang@monash.edu", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+Authors@R: person("Yangzhuoran", "Yang", email = "Fin.Yang@monash.edu", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-1232-8017"))
+Description: Optimal portfolio selection via dimensional reduction in a stochastic optimal control setting. Including EM algorithm, the projection algorithm (PA) we proposed.
 Depends: R (>= 3.5.1)
-License: What license is it under?
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
+URL: https://github.com/FinYang/stocon
+BugReports: https://github.com/FinYang/stocon/issues
 Imports: tidyverse,
     glmnet,
     quadprog,
