@@ -7,7 +7,7 @@ Depends: R (>= 3.5.1)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-URL: https://github.com/FinYang/stocon
+URL: https://pkg.yangzhuoranyang.com/stocon, https://github.com/FinYang/stocon
 BugReports: https://github.com/FinYang/stocon/issues
 Imports: tidyverse,
     glmnet,

@@ -25,7 +25,7 @@
 #' @importFrom magrittr %>%
 #' @export
 #'
-sim_simple <- function(mu = 0.05, vol = 0.02, Tn = 10, N = 5, M = 1e4, par = 0.2, rho_do = NULL) {
+sim_simple <- function(mu = 0.05, vol = 0.02, Tn = 10, N = 5, M = 1e4, varcov = NULL, par = 0.2, rho_do = NULL) {
   if ((length(mu) == 1) & (length(vol) == 1)) {
     mu <- rep(mu, N)
     vol <- rep(vol, N)
@@ -39,7 +39,7 @@ sim_simple <- function(mu = 0.05, vol = 0.02, Tn = 10, N = 5, M = 1e4, par = 0.2
   # covariance matrix
   if (!is.null(varcov)) {
     if (!all(diag(varcov) == vol)) {
-      stop("iagonal elements must equal to vol squared")
+      stop("Diagonal elements must equal to vol squared")
     }
   } else {
     if (is.null(rho_do)) {
@@ -59,9 +59,16 @@ sim_simple <- function(mu = 0.05, vol = 0.02, Tn = 10, N = 5, M = 1e4, par = 0.2
   # -
   Rt <- NULL
   # if(independent){
-  for (t in 1:(Tn + 1)) {
-    Z <- matrix(rnorm(M * N), ncol = N)
-    Rt[[t]] <- t(replicate(M, mu)) + Z %*% A
+  if (N == 1) {
+    for (t in 1:(Tn + 1)) {
+      Z <- matrix(rnorm(M * N), ncol = N)
+      Rt[[t]] <- replicate(M, mu) + Z %*% A
+    }
+  } else {
+    for (t in 1:(Tn + 1)) {
+      Z <- matrix(rnorm(M * N), ncol = N)
+      Rt[[t]] <- t(replicate(M, mu)) + Z %*% A
+    }
   }
   # } else {
   ## Dependent returns TBC

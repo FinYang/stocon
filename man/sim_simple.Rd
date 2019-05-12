@@ -5,7 +5,7 @@
 \title{Return Simulation from multivariate normal distribution}
 \usage{
 sim_simple(mu = 0.05, vol = 0.02, Tn = 10, N = 5, M = 10000,
-  par = 0.2, rho_do = NULL)
+  varcov = NULL, par = 0.2, rho_do = NULL)
 }
 \arguments{
 \item{mu}{Either a scalar or a vector with length N contains mean of the assets returns}
