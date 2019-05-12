@@ -1,0 +1,36 @@
+template:
+  params:
+    bootswatch: flatly
+
+authors:
+  Yangzhuoran Yang:
+    href: http://yangzhuoranyang.com
+navbar:
+  structure:
+    left:
+    - home
+    - intro
+    - reference
+    - articles
+    - tutorials
+    - news
+    right: github
+  components:
+    home:
+      icon: fas fa-home fa-lg
+      href: index.html
+    reference:
+      text: Reference
+      href: reference/index.html
+    github:
+      icon: fab fa-github fa-lg
+      href: https://github.com/FinYang/stocon
+
+
+
+
+
+reference:
+- title: All functions
+  desc: ~
+  contents: '`sim_simple`'

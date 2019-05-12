@@ -2,29 +2,39 @@
 % Please edit documentation in R/simulation.R
 \name{sim_simple}
 \alias{sim_simple}
-\title{Simple simulation}
+\title{Return Simulation from multivariate normal distribution}
 \usage{
-sim_simple(R1 = NULL, mu = NULL, vol = NULL, Tn = 10, N = 5,
-  M = 10000, defaultsetting = TRUE)
+sim_simple(mu = 0.05, vol = 0.02, Tn = 10, N = 5, M = 10000,
+  par = 0.2, rho_do = NULL)
 }
 \arguments{
-\item{R1}{Returns at time 0. Should be a M*N matrix where M and N are the number of entry and number of assets.}
+\item{mu}{Either a scalar or a vector with length N contains mean of the assets returns}
 
-\item{mu}{Vector with length N contains mean of the assets returns}
-
-\item{vol}{Vector with length N contains volatilities of the assets returns}
+\item{vol}{Either a scalar or a vector with length N contains volatilities of the assets returns}
 
 \item{Tn}{Number of periods, excluding time 0.}
 
-\item{N}{number of assets}
+\item{N}{Number of assets}
 
-\item{M}{number of realization}
+\item{M}{Number of realization}
+
+\item{par}{The parameter in the default correlation function. See Details.}
+
+\item{rho_do}{The function of correlation between assets. See below for the default function.}
+
+\item{varcor}{The variance covariance matrix of the assets. Diagonal elements must equal to vol squared.
+If supplied, arguments \code{par} and \code{rho_do} will be ignored. If NULL, will be calculated using the correlation function and vol.}
 }
 \value{
 List of returns
 }
 \description{
-Simulate returns using Choleski Decomposition where correlation depends on the order of assets
+Simulate self-independent returns using Choleski Decomposition where correlation depends on the order of assets
+from multvariate normal distribution
+}
+\details{
+The correlation function determines the correlation between asset by the difference between the index of the assets.
+The default function is \code{rho = exp(-par * |distance|)}
 }
 \author{
 Yangzhuoran Yang
