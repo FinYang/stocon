@@ -8,7 +8,8 @@
 #' from multvariate normal distribution
 #'
 #' The correlation function determines the correlation between asset by the difference between the index of the assets.
-#' The default function is \code{rho = exp(-par * |distance|)}
+#' The default function is \code{rho = exp(-par * |distance|)}.
+#' User defined correlation function need to have two arguments \code{i} and  \code{j} to indicate the position of assets
 #'
 #'
 #' @param mu Either a scalar or a vector with length N contains mean of the assets returns
@@ -39,7 +40,7 @@ sim_simple <- function(mu = 0.05, vol = 0.02, Tn = 10, N = 5, M = 1e4, varcov = 
   # covariance matrix
   if (!is.null(varcov)) {
     if (!all(diag(varcov) == vol)) {
-      stop("Diagonal elements must equal to vol squared")
+      stop("Diagonal elements of covariance matrix must equal to vol squared")
     }
   } else {
     if (is.null(rho_do)) {
