@@ -24,28 +24,13 @@ mean_J <- replicate(Tn,list(matrix(c(mean_J1, -1), 2)))
 mean_JJ <- matrix(c((mean_J1^2+sd_Rr^2), -(mean_Rr-Rf), -(mean_Rr-Rf), 1), 2)
 mean_JJ <- replicate(Tn,list(mean_JJ))
 
-# HDGF
+HDGF <- HDGF(Tn=Tn, lambda=lambda, mean_JJ = mean_JJ, mean_J = mean_J, Rf = Rf)
+Ht <- HDGF[[1]]
+Dt <- HDGF[[2]]
+Gt <- HDGF[[3]]
+Ft <- HDGF[[4]]
 
-
-# H  0 : Tn-1 = Tn
-# D  0 : Tn   = Tn+1
-# G  0 : Tn   = Tn+1
-# F  0 : Tn   = Tn+1
-Ht <- vector("list", Tn)
-Dt <- vector("list", Tn+1)
-Gt <- vector("list", Tn+1)
-Ft <- vector("list", Tn+1)
-Dt[[Tn+1]] <- 1
-Gt[[Tn+1]] <- 0
-Ft[[Tn+1]] <- 0
-for(i in Tn:1){
-  Ht[[i]] <- matrix(c(0,0,0,1), 2) + Dt[[i+1]]*mean_JJ[[i]]
-  mul <- (1-Dt[[i+1]]*t(mean_J[[i]]) %*% solve(Ht[[i]]) %*% mean_J[[i]])
-  Dt[[i]] <- c(discount*Rf^2*Dt[[i+1]] * mul)
-  Gt[[i]] <- c((discount*Rf*Gt[[i+1]] + discount*Rf*(Rf -2)*lambda*Dt[[i+1]]) * mul )
-  Ft[[i]] <- c((discount*(Rf-2)^2*lambda^2*Dt[[i+1]] + 2*discount*(Rf-2)*lambda*Gt[[i+1]] + discount*Ft[[i+1]]) * mul)
-}
-
+# W tilde
 Wt <- W[1,] - lambda
 Wt <- split(Wt, rep(1:length(Wt), each = length(Wt)))
 # Solution of value function
@@ -82,7 +67,7 @@ cumu_adi <- rev(cumsum(adi))
 adii <- cumu_adi +rev(adi)
 # ft <- sapply(Vt, mean)-lambda^2*adii
 V0 <- V0-adii[[1]]
-
+V0
 
 
 

@@ -14,26 +14,12 @@ Rt <- Rt %>%
 
 
 get_Rr <- function(Rt){
-  lm_weight <- function(Rt){
-    reg_data <- cbind(Rt[,1], Rt[,1] - Rt[,2:NCOL(Rt)])
-    model <- lm(reg_data[,1]~reg_data[,-1])
-    weights <- c(1-sum(coef(model)[-1]), coef(model)[-1])
-    names(weights) <- NULL
-    return(weights)
-  }
-  weights <- sapply(Rt, lm_weight)
-
-
+  weights <- sapply(Rt, weights_lm)
   Rr <- mapply(function(Rt, omega) Rt %*% omega, Rt = Rt, omega = as.data.frame(weights))
   return(Rr)
 }
 
 Rr <- get_Rr(Rt)
-
-
-# single Rr ---------------------------------------------------------------
-
-
 
 
 Rf <- 1.01
@@ -42,6 +28,8 @@ W[,1] <- 1000
 
 
 # about J -----------------------------------------------------------------
+# all using mean
+# need to change to nonparametric methods ----------
 
 
 # First element in J
@@ -61,77 +49,4 @@ JJ2 <- -(Rr-Rf)
 mean_JJ1 <- colMeans(JJ1)
 mean_JJ2 <- colMeans(JJ2)
 mean_JJ <- mapply(function(JJ1, JJ2) matrix(c(JJ1, JJ2, JJ2, 1), 2), JJ1 = mean_JJ1, JJ2  = mean_JJ2, SIMPLIFY = F)
-
-
-
-# single Rr ---------------------------------------------------------------
-mean_Rr <- 1.05
-sd_Rr <- 0.03
-
-
-mean_J1 <- mean_Rr - Rf
-mean_J <- replicate(Tn,list(matrix(c(mean_J1, -1), 2)))
-
-mean_JJ <- matrix(c((mean_J1^2+sd_Rr^2), -(mean_Rr-Rf), -(mean_Rr-Rf), 1), 2)
-mean_JJ <- replicate(Tn,list(mean_JJ))
-
-# HDGF --------------------------------------------------------------------
-
-
-# H  0 : Tn-1 = Tn
-# D  0 : Tn   = Tn+1
-# G  0 : Tn   = Tn+1
-# F  0 : Tn   = Tn+1
-Ht <- vector("list", Tn)
-Dt <- vector("list", Tn+1)
-Gt <- vector("list", Tn+1)
-Ft <- vector("list", Tn+1)
-Dt[[Tn+1]] <- 1
-Gt[[Tn+1]] <- 0
-Ft[[Tn+1]] <- 0
-for(i in Tn:1){
-  Ht[[i]] <- matrix(c(0,0,0,1), 2) + Dt[[i+1]]*mean_JJ[[i]]
-  mul <- (1-Dt[[i+1]]*t(mean_J[[i]]) %*% solve(Ht[[i]]) %*% mean_J[[i]])
-  Dt[[i]] <- c(discount*Rf^2*Dt[[i+1]] * mul)
-  Gt[[i]] <- c((discount*Rf*Gt[[i+1]] + discount*Rf*(Rf -2)*lambda*Dt[[i+1]]) * mul )
-  Ft[[i]] <- c((discount*(Rf-2)^2*lambda^2*Dt[[i+1]] + 2*discount*(Rf-2)*lambda*Gt[[i+1]] + discount*Ft[[i+1]]) * mul)
-}
-
-Wt <- W - lambda
-Wt <- split(Wt, rep(1:ncol(Wt), each = nrow(Wt)))
-# Solution of value function
-get_Vt <- function(Wt, Dt, Gt, Ft){
-  Wt^2*Dt + 2*Wt*Gt + Ft
-}
-# Solution of control
-get_Zt <- function(Wt, Ht, Dt1, Gt1, Rf, lambda, mean_J){
-  lapply(Wt,function(Wt) -(Dt1 * (Wt*Rf + (Rf-2)*lambda) +Gt1) * solve(Ht) %*% mean_J)
-  # -solve(Ht) %*% (Dt1 * (Wt*Rf + (Rf-2)*lambda)) %*% mean_J
-}
-# Evolution of Wt
-evo_Wt <- function(Wt, Rf, lambda, Jt, Zt){
-  mapply(function(Wt, Jt, Zt) c(Wt*Rf +(Rf-2)*lambda + t(Jt) %*% Zt),Wt = Wt, Jt = Jt, Zt = Zt, SIMPLIFY = FALSE)
-}
-# 0 : Tn-1
-Vt <- vector("list", Tn)
-Zt <- vector("list", Tn)
-for(i in 1:Tn){
-  Vt[[i]] <- get_Vt(Wt = Wt[[i]], Dt = Dt[[i]], Gt = Gt[[i]], Ft = Ft[[i]])
-  Zt[[i]] <- get_Zt(Wt = Wt[[i]], Ht = Ht[[i]], Dt1 = Dt[[i+1]], Gt1 = Gt[[i+1]], Rf = Rf, lambda = lambda, mean_J = mean_J[[i]])
-  Wt[[i+1]] <- do.call(c,evo_Wt(Wt = Wt[[i]], Rf = Rf,lambda = lambda, Jt =Jt[[i]], Zt = Zt[[i]]))
-}
-# V <- mapply(get_Vt, Wt = as.data.frame(Wt), Dt = Dt, Gt = Gt, Ft = Ft, SIMPLIFY = FALSE)
-
-
-adi <- discount^(1:Tn)
-cumu_adi <- rev(cumsum(adi))
-adii <- cumu_adi +rev(adi)
-ft <- sapply(Vt, mean)-lambda^2*adii
-
-
-
-
-
-
-
 

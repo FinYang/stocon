@@ -150,6 +150,7 @@ solnl(X = X, objfun = objfun, confun = confun)
 #' @return List of weights for each period
 #' @author Yangzhuoran Yang
 #' @importFrom magrittr %>%
+#' @seealso \code{\link{weights_lm}}
 #' @export
 weights_lasso <- function(Rt, N = NCOL(Rt[[1]]), qp_lasso = TRUE, qp_weights = NULL){
   if(qp_lasso){
