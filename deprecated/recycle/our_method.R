@@ -3,39 +3,15 @@ library(tidyverse)
 discount = 1/1.05
 lambda = 1/2
 
-Tn <- 5
-N <- 5
-M <- 1e4
 
-simulate_riskys <- function(){
-  rt <- matrix(nrow=M, ncol=N)
-  Rt <- lapply(seq_len(Tn), function(X) rt)
-  mu <- c(0.01, 0.003, 0.012, 0.004, 0.015)
-  vol <- c(0.01, 0.06, 0.03, 0.07, 0.005)
-  for(i in 1:N)
-    Rt[[1]][,i] <- rnorm(M, mean = mu[i], sd = vol[i])
-  rho_do <- function(i,j, par=0.2){
-    exp(-par*(i-j))
-  }
-  rho_m <- sapply(1:N, function(i) {
-    sapply(1:N, function(j) rho_do(i=i, j=j))
-  })
-  rho_m[lower.tri(rho_m, TRUE)] <- 0
-  rho_m <- rho_m + t(rho_m) + diag(rep(1, N))
+set.seed(2222)
+# Simulate the return of risky assets
+mu <- c(0.01, 0.003, 0.012, 0.004, 0.015)
+vol <- c(0.01, 0.06, 0.03, 0.07, 0.005)
+Rt <- sim_simple(mu, vol, Tn=4, N=5, independent = FALSE)
+Rt <- Rt %>%
+  lapply(function(x) x+1)
 
-  varcov <- vol %*% t(vol) * rho_m
-  A <- chol(varcov)
-  # -
-
-  for(t in 2:Tn){
-    Z <- matrix(rnorm(M*N), ncol=N)
-    Rt[[t]] <- Rt[[t-1]]  +  Z %*% A +t(replicate(M,mu))
-  }
-
-  Rt <- Rt %>%
-    lapply(function(x) x+1) # simulated return for each resky assets
-  return(Rt)
-}
 
 get_Rr <- function(Rt){
   lm_weight <- function(Rt){
@@ -52,7 +28,6 @@ get_Rr <- function(Rt){
   return(Rr)
 }
 
-Rt <- simulate_riskys()
 Rr <- get_Rr(Rt)
 
 

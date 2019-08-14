@@ -3,11 +3,12 @@
 #' portfolio quadratic programming for multiperiod data set
 #' @param rt List of return
 #' @param constr If numeric, take as the imposed constraint.
-#' If NULL, nu constraint. Otherwise compute proper constraint using 10-fold cross-validation
+#' If NULL, no constraint. Otherwise compute proper constraint using 10-fold cross-validation
 #' @return Weights for each periods
 #' @author Yangzhuoran Yang
+#' @rdname weights_lasso
 #' @export
-qp_weights <- function(rt, constr = 1){
+weights_qp <- function(rt, constr = 1){
   if(!is.list(rt)) rt <- list(rt)
   if(length(constr) == 0){
     qp_weights <- mapply(qp_weights_noc, rt)
@@ -141,7 +142,7 @@ solnl(X = X, objfun = objfun, confun = confun)
 
 
 
-#' Lasso portfolio selection
+#' Additional portfolio selection weights method: LASSO, qp
 #'
 #' Default using lasso after quadratic programming. As a approximation to constrained risk
 #' minimization
@@ -154,12 +155,12 @@ solnl(X = X, objfun = objfun, confun = confun)
 #' @author Yangzhuoran Yang
 #' @importFrom magrittr %>%
 #' @export
-lasso_weights <- function(Rt, N = NCOL(Rt[[1]]), qp_lasso = TRUE, qp_weights = NULL){
+weights_lasso <- function(Rt, N = NCOL(Rt[[1]]), qp_lasso = TRUE, qp_weights = NULL){
   if(qp_lasso){
-    if(is.null(qp_weights)) qp_weights <- qp_weights(Rt)
+    if(is.null(qp_weights)) qp_weights <- weights_qp(Rt)
     Rt_noshortsale <- mapply(function(Rt,w) Rt %*% w,
                                          Rt = Rt,
-                                         w = as.data.frame(qp_weights))
+                                         w = as.data.frame(weights_qp))
   input_Rt <- mapply(function(ns, Rt) cbind(ns, Rt), ns = as.data.frame(Rt_noshortsale), Rt = Rt, SIMPLIFY = F)
   } else input_Rt <- Rt
   lasso_data <- lapply(input_Rt, function(Rt) cbind(Rt[,1], Rt[,2:NCOL(Rt)]-Rt[,1]))

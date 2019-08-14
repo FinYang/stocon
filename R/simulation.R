@@ -21,13 +21,15 @@
 #' If supplied, arguments \code{par} and \code{rho_do} will be ignored. If NULL, will be calculated using the correlation function and vol.
 #' @param par The parameter in the default correlation function. See Details.
 #' @param rho_do The function of correlation between assets. See below for the default function.
+#' @param dependent If the following simulated series are added on the basis of existing ones.
 #' @return List of returns
 #' @author Yangzhuoran Yang
 #' @importFrom magrittr %>%
 #' @export
 #'
-sim_simple <- function(mu = 0.05, vol = 0.02, Tn = 10, N = 5, M = 1e4, varcov = NULL, par = 0.2, rho_do = NULL) {
-  if ((length(mu) == 1) & (length(vol) == 1)) {
+sim_simple <- function(mu = 0.05, vol = 0.02, Tn = 10, N = 5, M = 1e4, varcov = NULL,
+                       par = 0.2, rho_do = NULL, dependent =FALSE) {
+  if ((length(mu) == 1) && (length(vol) == 1)) {
     mu <- rep(mu, N)
     vol <- rep(vol, N)
   } else {
@@ -58,29 +60,38 @@ sim_simple <- function(mu = 0.05, vol = 0.02, Tn = 10, N = 5, M = 1e4, varcov = 
   }
   A <- chol(varcov)
   # -
-  Rt <- NULL
-  # if(independent){
-  if (N == 1) {
-    for (t in 1:(Tn + 1)) {
-      Z <- matrix(rnorm(M * N), ncol = N)
-      Rt[[t]] <- replicate(M, mu) + Z %*% A
+  if(!dependent){
+    Rt <- NULL
+    if (N == 1) {
+      for (t in 1:(Tn + 1)) {
+        Z <- matrix(rnorm(M * N), ncol = N)
+        Rt[[t]] <- replicate(M, mu) + Z %*% A
+      }
+    } else {
+      for (t in 1:(Tn + 1)) {
+        Z <- matrix(rnorm(M * N), ncol = N)
+        Rt[[t]] <- t(replicate(M, mu)) + Z %*% A
+      }
     }
   } else {
-    for (t in 1:(Tn + 1)) {
-      Z <- matrix(rnorm(M * N), ncol = N)
-      Rt[[t]] <- t(replicate(M, mu)) + Z %*% A
+    ## Dependent returns TBC
+    rt <- matrix(nrow=M, ncol=N)
+    Rt <- lapply(seq_len(Tn), function(X) rt)
+    for(i in 1:N)
+      Rt[[1]][,i] <- rnorm(M, mean = mu[i], sd = vol[i])
+    for(t in 2:(Tn+1)){
+      Z <- matrix(rnorm(M*N), ncol=N)
+      Rt[[t]] <- Rt[[t-1]]  +  Z %*% A +t(replicate(M,mu))
     }
+    #   Rt[[1]] <- sapply(1:N, function(i) rnorm(M, mean = mu[[i]], sd = vol[[i]]))
+    #   for (t in 2:(Tn + 1)) {
+    #     Z <- matrix(rnorm(M * N), ncol = N)
+    #     Rt[[t]] <- Rt[[t - 1]] + t(replicate(M, mu)) + Z %*% A
+    #   }
   }
-  # } else {
-  ## Dependent returns TBC
-  #   Rt[[1]] <- sapply(1:N, function(i) rnorm(M, mean = mu[[i]], sd = vol[[i]]))
-  #   for (t in 2:(Tn + 1)) {
-  #     Z <- matrix(rnorm(M * N), ncol = N)
-  #     Rt[[t]] <- Rt[[t - 1]] + t(replicate(M, mu)) + Z %*% A
-  #   }
-  # }
   return(Rt)
 }
+
 
 
 # simulation CIR ------------------------------------------------------
