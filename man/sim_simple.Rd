@@ -5,7 +5,7 @@
 \title{Return Simulation from multivariate normal distribution}
 \usage{
 sim_simple(mu = 0.05, vol = 0.02, Tn = 10, N = 5, M = 10000,
-  varcov = NULL, par = 0.2, rho_do = NULL)
+  varcov = NULL, par = 0.2, rho_do = NULL, dependent = FALSE)
 }
 \arguments{
 \item{mu}{Either a scalar or a vector with length N contains mean of the assets returns}
@@ -22,6 +22,8 @@ sim_simple(mu = 0.05, vol = 0.02, Tn = 10, N = 5, M = 10000,
 
 \item{rho_do}{The function of correlation between assets. See below for the default function.}
 
+\item{dependent}{If the following simulated series are added on the basis of existing ones.}
+
 \item{varcor}{The variance covariance matrix of the assets. Diagonal elements must equal to vol squared.
 If supplied, arguments \code{par} and \code{rho_do} will be ignored. If NULL, will be calculated using the correlation function and vol.}
 }
@@ -34,7 +36,8 @@ from multvariate normal distribution
 }
 \details{
 The correlation function determines the correlation between asset by the difference between the index of the assets.
-The default function is \code{rho = exp(-par * |distance|)}
+The default function is \code{rho = exp(-par * |distance|)}.
+User defined correlation function need to have two arguments \code{i} and  \code{j} to indicate the position of assets
 }
 \author{
 Yangzhuoran Yang

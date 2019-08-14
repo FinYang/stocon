@@ -1,21 +1,17 @@
 # Weights function
 
-#' portfolio quadratic programming for multiperiod data set
-#' @param rt List of return
 #' @param constr If numeric, take as the imposed constraint.
 #' If NULL, no constraint. Otherwise compute proper constraint using 10-fold cross-validation
-#' @return Weights for each periods
-#' @author Yangzhuoran Yang
-#' @rdname weights_lasso
+#' @describeIn weights_lasso portfolio selection quadratic programming for multiperiod data set
 #' @export
-weights_qp <- function(rt, constr = 1){
-  if(!is.list(rt)) rt <- list(rt)
+weights_qp <- function(Rt, constr = 1){
+  if(!is.list(Rt)) Rt <- list(Rt)
   if(length(constr) == 0){
-    qp_weights <- mapply(qp_weights_noc, rt)
+    qp_weights <- mapply(qp_weights_noc, Rt)
   } else if(is.numeric(constr)){
-    qp_weights <- mapply(qp_weights_do, rt, MoreArgs = list(constr = constr))
+    qp_weights <- mapply(qp_weights_do, Rt, MoreArgs = list(constr = constr))
   } else {
-    qp_weights <- mapply(cv.qp_weights_do, rt)
+    qp_weights <- mapply(cv.qp_weights_do, Rt)
   }
   return(qp_weights)
 }

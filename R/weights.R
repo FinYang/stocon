@@ -11,6 +11,7 @@
 #' @return List of weights for each period
 #' @author Yangzhuoran Yang
 #' @importFrom magrittr %>%
+#' @references Fan, J., Zhang, J., & Yu, K. (2012). Vast Portfolio Selection With Gross-Exposure Constraints. Journal of the American Statistical Association, 107(498), 592–606. https://doi.org/10.1080/01621459.2012.682825
 #' @export
 weights_lm <- function(Rt){
   reg_data <- cbind(Rt[,1], Rt[,1] - Rt[,2:NCOL(Rt)])
