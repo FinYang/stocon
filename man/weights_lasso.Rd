@@ -32,6 +32,9 @@ minimization
 \item \code{weights_qp}: portfolio selection quadratic programming for multiperiod data set
 }}
 
+\seealso{
+\code{\link{weights_lm}}
+}
 \author{
 Yangzhuoran Yang
 }

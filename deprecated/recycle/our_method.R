@@ -8,7 +8,7 @@ set.seed(2222)
 # Simulate the return of risky assets
 mu <- c(0.01, 0.003, 0.012, 0.004, 0.015)
 vol <- c(0.01, 0.06, 0.03, 0.07, 0.005)
-Rt <- sim_simple(mu, vol, Tn=4, N=5, independent = FALSE)
+Rt <- sim_simple(mu, vol, Tn=4, N=5, dependent = FALSE)
 Rt <- Rt %>%
   lapply(function(x) x+1)
 

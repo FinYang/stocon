@@ -126,9 +126,9 @@ round_EM <- function(Rr, Rf, valuefunction = value_varmean, M = NROW(Rr[[1]]),
 #' The function reads the parameters and value from the environment in which it runs,
 #' which is normally the global Environment.
 #'
-#'  @param n_iter Integer. The number of iteration.
-#'  @author Yangzhuoran Yang
-#'  @seealse \code{round_EM}
+#' @param n_iter Integer. The number of iteration.
+#' @author Yangzhuoran Yang
+#' @seealse \code{round_EM}
 #'
 #'
 #'  @export

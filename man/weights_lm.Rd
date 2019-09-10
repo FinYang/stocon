@@ -19,6 +19,9 @@ Fan, Zhang & Yu (2012)
 \references{
 Fan, J., Zhang, J., & Yu, K. (2012). Vast Portfolio Selection With Gross-Exposure Constraints. Journal of the American Statistical Association, 107(498), 592–606. https://doi.org/10.1080/01621459.2012.682825
 }
+\seealso{
+\code{\link{weights_lasso}}
+}
 \author{
 Yangzhuoran Yang
 }
