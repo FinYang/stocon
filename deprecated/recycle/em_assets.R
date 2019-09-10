@@ -1,5 +1,5 @@
 library(tidyverse)
-source("../../R/simulation.R")
+source("R/simulation.R")
 
 Tn <- 5
 N <- 5
@@ -87,13 +87,13 @@ pm[[1]] <- dytim(Rt, Rf, valuefunction = value_varmean, discount = discount)
 pb <- txtProgressBar(min = 1, max = 100, style = 3)
 for(it in 2:100){
   # Rr <- replicate(Tn,  matrix(rnorm(M, mean_Rr, sd_Rr), ncol = 1), simplify = F)
-  Rt <- sim_simple(Tn = Tn, N=5, M=M)
+  # Rt <- sim_simple(Tn = Tn, N=5, M=M)
   # Rr <- step2(Rr)
   pm[[it]] <- dytim(Rt, Rf, para = pm[[it-1]][[1]], discount = discount)
   setTxtProgressBar(pb, it)
 }
 v <- sapply(pm, function(x) x[[2]])
-saveRDS(pm, "em_assets2.rds")
+saveRDS(pm, "em_assets_samedata.rds")
 qplot(y= v, x=seq_along(v), geom = "line")
 plotly::ggplotly()
 # + geom_line(aes(y=v, x=x, color = "red"), data = data.frame(v=v100, x=seq_along(v100)))
