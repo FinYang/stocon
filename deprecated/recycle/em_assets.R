@@ -81,7 +81,10 @@ pm <- NULL
 # mean_Rr <- 1.05
 # sd_Rr <- 0.03
 # Rr <- replicate(Tn,  matrix(rnorm(M, mean_Rr, sd_Rr), ncol = 1), simplify = F)
-Rt <- sim_simple(Tn = Tn, N=5, M=M)
+set.seed(22222)
+Rt <- sim_simple(Tn = Tn, N=5, M=M) %>%
+  lapply(function(x) x+1)
+saveRDS(Rt,"Rt.rds")
 # pm[[1]] <- dytim(Rr, Rf, discount = discount)
 pm[[1]] <- dytim(Rt, Rf, valuefunction = value_varmean, discount = discount)
 pb <- txtProgressBar(min = 1, max = 100, style = 3)
@@ -94,7 +97,7 @@ for(it in 2:100){
 }
 v <- sapply(pm, function(x) x[[2]])
 saveRDS(pm, "em_assets_samedata.rds")
-qplot(y= v, x=seq_along(v), geom = "line")
+ggplot2::qplot(y= v, x=seq_along(v), geom = "line")
 plotly::ggplotly()
 # + geom_line(aes(y=v, x=x, color = "red"), data = data.frame(v=v100, x=seq_along(v100)))
 

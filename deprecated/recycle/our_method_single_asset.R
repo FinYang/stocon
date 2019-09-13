@@ -15,7 +15,7 @@ W[,1] <- 1000
 
 # single Rr
 mean_Rr <- 1.05
-sd_Rr <- 0.03
+sd_Rr <- 0.017
 
 
 mean_J1 <- mean_Rr - Rf
@@ -24,7 +24,7 @@ mean_J <- replicate(Tn,list(matrix(c(mean_J1, -1), 2)))
 mean_JJ <- matrix(c((mean_J1^2+sd_Rr^2), -(mean_Rr-Rf), -(mean_Rr-Rf), 1), 2)
 mean_JJ <- replicate(Tn,list(mean_JJ))
 
-HDGF <- HDGF(Tn=Tn, lambda=lambda, mean_JJ = mean_JJ, mean_J = mean_J, Rf = Rf)
+HDGF <- get_HDGF(Tn=Tn, lambda=lambda, mean_JJ = mean_JJ, mean_J = mean_J, Rf = Rf)
 Ht <- HDGF[[1]]
 Dt <- HDGF[[2]]
 Gt <- HDGF[[3]]
@@ -33,6 +33,7 @@ Ft <- HDGF[[4]]
 # W tilde
 Wt <- W[1,] - lambda
 Wt <- split(Wt, rep(1:length(Wt), each = length(Wt)))
+Wt <- Wt[[1]]
 # Solution of value function
 get_Vt <- function(Wt, Dt, Gt, Ft){
   Wt^2*Dt + 2*Wt*Gt + Ft
@@ -50,16 +51,16 @@ evo_Wt <- function(Wt, Rf, lambda, Jt, Zt){
 
 V0 <- get_Vt(Wt = Wt[[1]], Dt = Dt[[1]], Gt = Gt[[1]], Ft = Ft[[1]])
 # 0 : Tn-1
-# Vt <- vector("list", Tn)
-# Zt <- vector("list", Tn)
-# for(i in 1:Tn){
-#   Vt[[i]] <- get_Vt(Wt = Wt[[i]], Dt = Dt[[i]], Gt = Gt[[i]], Ft = Ft[[i]])
-#   Zt[[i]] <- get_Zt(Wt = Wt[[i]], Ht = Ht[[i]], Dt1 = Dt[[i+1]], Gt1 = Gt[[i+1]], Rf = Rf, lambda = lambda, mean_J = mean_J[[i]])
-#   # Wt[[i+1]] <- do.call(c,evo_Wt(Wt = Wt[[i]], Rf = Rf,lambda = lambda, Jt =Jt[[i]], Zt = Zt[[i]]))
-#
-#   Wt[[i+1]] <- evo_Wt(Wt = Wt[[i]], Rf = Rf,lambda = lambda, Jt =Jt[[i]], Zt = Zt[[i]])
-# }
-# V <- mapply(get_Vt, Wt = as.data.frame(Wt), Dt = Dt, Gt = Gt, Ft = Ft, SIMPLIFY = FALSE)
+Vt <- vector("list", Tn)
+Zt <- vector("list", Tn)
+for(i in 1:Tn){
+  Vt[[i]] <- get_Vt(Wt = Wt[[i]], Dt = Dt[[i]], Gt = Gt[[i]], Ft = Ft[[i]])
+  Zt[[i]] <- get_Zt(Wt = Wt[[i]], Ht = Ht[[i]], Dt1 = Dt[[i+1]], Gt1 = Gt[[i+1]], Rf = Rf, lambda = lambda, mean_J = mean_J[[i]])
+  # Wt[[i+1]] <- do.call(c,evo_Wt(Wt = Wt[[i]], Rf = Rf,lambda = lambda, Jt =Jt[[i]], Zt = Zt[[i]]))
+
+  Wt[[i+1]] <- evo_Wt(Wt = Wt[[i]], Rf = Rf,lambda = lambda, Jt =mean_J[[i]], Zt = Zt[[i]])
+}
+V <- mapply(get_Vt, Wt = as.data.frame(Wt), Dt = Dt, Gt = Gt, Ft = Ft, SIMPLIFY = FALSE)
 
 #
 adi <- discount^(1:Tn)
