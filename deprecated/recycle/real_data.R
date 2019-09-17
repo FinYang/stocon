@@ -9,5 +9,13 @@ russell <- select(russell, -NA_ind)
 
 
 russellR <- russell[,-1] %>%
-  transmute_all(function(x) c(diff(x), NA)/x) %>%
-  drop_na()
+  transmute_all(function(x) c(diff(log(x)), NA)) %>%
+  mutate(Date = russell$Date) %>%
+  drop_na() %>%
+  filter(year(Date) %in% 2012:2017 ) %>%
+  split(year(.$Date)) %>%
+  lapply(function(x) select(x, -Date) %>%
+           (function(y){y+1})() %>%
+           (function(z){z[1:250,]})) %>%
+  lapply(as.matrix)
+# test <- OCPA(russellR, Rf = 1.00001, ini_W = 10000)

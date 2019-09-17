@@ -7,8 +7,8 @@ M <- 1e4
 
 Rf <- 1.01
 discount <- 1/1.05
-W <- matrix(nrow = M, ncol = Tn+1)
-W[,1] <- 1000
+# W <- matrix(nrow = M, ncol = Tn+1)
+# W[,1] <- 1000
 
 # para_beta <- numeric(3)
 beta_function <- function(para_beta, w){

@@ -51,7 +51,7 @@ c_function <- function(para_c, w){
 #' @export
 value_varmean <- function(update_par = NULL, i = 1, para, Rr, Rf,
                           M = NROW(Rr[[1]]), Tn = length(Rr), W, discount=1/1.01,
-                          lambda = 1/2, returnW = FALSE){
+                          lambda = 1/2, returnW = FALSE, detail = FALSE){
   if(!is.null(update_par)) para[i, ] <- update_par
   para_beta <- para[ ,1:3]
   para_c <- para[ ,4:5]
@@ -63,16 +63,18 @@ value_varmean <- function(update_par = NULL, i = 1, para, Rr, Rf,
   }
   Value <- numeric(M)
   # t-1 : Tn-1
-
+  BETA <- list()
+  C <- list()
   for(t in (i):(Tn)){
-    BETA <- beta_function(para_beta = para_beta[t, ], w = W[,t])
-    C <- c_function(para_c = para_c[t, ], w = W[,t])
-    W[,t+1] <- (W[,t]-BETA)*Rf + BETA*Rr[[t]] - C
-    Value <- Value + discount^(t-i+1)*(C^2-2*lambda*C)
+    BETA[[t-i+1]] <- beta_function(para_beta = para_beta[t, ], w = W[,t])
+    C[[t-i+1]] <- c_function(para_c = para_c[t, ], w = W[,t])
+    W[,t+1] <- (W[,t]-BETA[[t-i+1]])*Rf + BETA[[t-i+1]]*Rr[[t]] - C[[t-i+1]]
+    Value <- Value + discount^(t-i+1)*(C[[t-i+1]]^2-2*lambda*C[[t-i+1]])
   }
   Value <- Value + discount^(Tn-i+1)*(W[,Tn+1]^2-2*lambda*W[,Tn+1])
   Value <- mean(Value)
   if(returnW) return(W)
+  if(detail) return(list(W=W, v = value))
   return(Value)
 }
 
@@ -115,8 +117,12 @@ round_EM <- function(Rr, Rf, valuefunction = value_varmean, M = NROW(Rr[[1]]),
                       M = M, Tn = Tn, discount = discount, lambda = lambda)$par
   }
   colnames(para) <- c(paste0("beta_", 1:3), paste0("c_", 1:2), paste0("weight", 1:(N-1)))
-  value <- valuefunction(para = para, Rr = Rr, Rf = Rf, W = W,
-                         M = M, Tn = Tn, discount = discount, lambda = lambda)
+  value <- numeric(Tn)
+  for(i in 1:(Tn)){
+    value[[i]] <- valuefunction(para = para, i=i, Rr = Rr, Rf = Rf, W = W,
+                           M = M, Tn = Tn, discount = discount, lambda = lambda)
+
+  }
   return(list(para, value))
 }
 
