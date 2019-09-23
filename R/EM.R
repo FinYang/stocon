@@ -74,7 +74,7 @@ value_varmean <- function(update_par = NULL, i = 1, para, Rr, Rf,
   Value <- Value + discount^(Tn-i+1)*(W[,Tn+1]^2-2*lambda*W[,Tn+1])
   Value <- mean(Value)
   if(returnW) return(W)
-  if(detail) return(list(W=W, v = value))
+  if(detail) return(list(W=W, value = Value))
   return(Value)
 }
 
@@ -94,7 +94,7 @@ value_varmean <- function(update_par = NULL, i = 1, para, Rr, Rf,
 #' @param lambda The scalar that make the calculation easiler.
 #' @param para Matrix. Initial value of all the paramters. Each column is a parameter and each row is a time point.
 #' @author Yangzhuoran Yang
-#' @seealso \code{iterate_EM}
+#' @seealso \code{EM}
 #' @export
 round_EM <- function(Rr, Rf, valuefunction = value_varmean, M = NROW(Rr[[1]]),
                   Tn = length(Rr)-1,
@@ -117,43 +117,75 @@ round_EM <- function(Rr, Rf, valuefunction = value_varmean, M = NROW(Rr[[1]]),
                       M = M, Tn = Tn, discount = discount, lambda = lambda)$par
   }
   colnames(para) <- c(paste0("beta_", 1:3), paste0("c_", 1:2), paste0("weight", 1:(N-1)))
+  # value <- list()
   value <- numeric(Tn)
   for(i in 1:(Tn)){
     value[[i]] <- valuefunction(para = para, i=i, Rr = Rr, Rf = Rf, W = W,
                            M = M, Tn = Tn, discount = discount, lambda = lambda)
-
+    # value[[i]]$t <- i-1
   }
-  return(list(para, value))
+  wealth <- valuefunction(para = para, i=i, Rr = Rr, Rf = Rf, W = W,
+                          M = M, Tn = Tn, discount = discount, lambda = lambda, returnW = TRUE)
+  ex_para <- para
+  para <- para[-NROW(para),]
+  para_beta <- para[,1:3]
+  para_c <- para[,4:5]
+  weights <- para[,6:NCOL(para)]
+  weights <- cbind(weights, 1-rowSums(weights))
+  colnames(weights)[[NCOL(weights)]] <- paste0("weight", NCOL(weights))
+
+  BETA <- mapply(beta_function, para_beta = split(para_beta, seq_len(NROW(para_beta))), w = as.data.frame(wealth)[,-NCOL(wealth)])
+  C <- mapply(c_function, para_c = split(para_c, seq_len(NROW(para_c))), w = as.data.frame(wealth)[,-NCOL(wealth)])
+
+
+
+  return(list(para = ex_para, value = value, wealth = wealth, BETA = BETA, C=C))
 }
 
 
 #' Wrapper to iterate E and M steps.
 #'
-#' The function reads the parameters and value from the environment in which it runs,
-#' which is normally the global Environment.
 #'
-#' @param n_iter Integer. The number of iteration.
+#' @param Rr List of matrix. The rertuns of the assets.
+#' Each list is for one time point and each column in the matrix is one assets.
+#' @param Rf Scalar. The risk free rate. e.g. 1.01
+#' @param valuefunction Function. The function that returns the value being optimised.
+#' The first argument needs to be the parameter to optimise.
+#' @param M Integer. The number of instances for one assets at a time
+#' @param Tn Integer. The length of time horizon. Not including 0.
+#' @param ini_W Scalar. The initial wealth.
+#' @param discount Scalar. The rate of discount. e.g. 1/1.01
+#' @param lambda The scalar that make the calculation easiler.
+#' @param para Matrix. Initial value of all the paramters. Each column is a parameter and each row is a time point.
 #' @author Yangzhuoran Yang
 #' @seealse \code{round_EM}
 #'
 #'
 #'  @export
-iterate_EM <- function(){
+EM <- function(Rr, Rf, max_iteration = 100, valuefunction = value_varmean, M = NROW(Rr[[1]]),
+               Tn = length(Rr)-1,
+               ini_W = 1000, discount=1/1.01,
+               lambda = 1/2, para = NULL, early_stop = ceiling(max_iteration/5)){
   pm <- NULL
 
-  pm[[1]] <- iterate_EM(Rt, Rf, valuefunction = value_varmean, discount = discount)
+  pm[[1]] <- round_EM(Rr, Rf, valuefunction, M, Tn, ini_W, discount, lambda, para)
   pb <- txtProgressBar(min = 2, max = 100, style = 3)
-  for(it in 2:100){
-    # Rr <- replicate(Tn,  matrix(rnorm(M, mean_Rr, sd_Rr), ncol = 1), simplify = F)
-    # Rt <- sim_simple(Tn = Tn, N=5, M=M)
-    # Rr <- step2(Rr)
-    pm[[it]] <- dytim(Rt, Rf, para = pm[[it-1]][[1]], discount = discount)
+  n_unchange <- 0
+  for(it in 2:max_iteration){
+    pm[[it]] <-  round_EM(Rr, Rf, valuefunction, M, Tn, ini_W, discount, lambda, para= pm[[it-1]][[1]])
     setTxtProgressBar(pb, it)
+
+    if(abs(pm[[it]]$value[[1]] - pm[[it-1]]$value[[1]])/ abs(pm[[it-1]]$value[[1]]) <0.01){
+      n_unchange <- n_unchange +1
+      if(n_unchange == early_stop) break
+    }
+
   }
+  close(pb)
   return(pm)
 }
-# + geom_line(aes(y=v, x=x, color = "red"), data = data.frame(v=v100, x=seq_along(v100)))
 
 
-# value_varmean(para = pm[[100]][[1]], Rr = Rr, Rf = Rf, W = W,
-#   M = M, Tn = Tn, discount = discount, lambda = lambda)
+
+
+

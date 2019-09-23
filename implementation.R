@@ -36,7 +36,7 @@ for(it in 2:100){
   setTxtProgressBar(pb, it)
 }
 time[[102]] <- Sys.time()
-v <- sapply(pm, function(x) x[[2]])
+v <- sapply(pm, function(x) x[[2]][[1]])
 saveRDS(pm, "em_assets_100_lambda50.rds")
 ggplot2::qplot(y= v, x=seq_along(v), geom = "line")
 plotly::ggplotly()
