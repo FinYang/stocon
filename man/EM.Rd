@@ -33,6 +33,9 @@ The first argument needs to be the parameter to optimise.}
 \description{
 Wrapper to iterate E and M steps.
 }
+\seealso{
+\code{round_EM}
+}
 \author{
 Yangzhuoran Yang
 }

@@ -158,10 +158,10 @@ round_EM <- function(Rr, Rf, valuefunction = value_varmean, M = NROW(Rr[[1]]),
 #' @param lambda The scalar that make the calculation easiler.
 #' @param para Matrix. Initial value of all the paramters. Each column is a parameter and each row is a time point.
 #' @author Yangzhuoran Yang
-#' @seealse \code{round_EM}
+#' @seealso \code{round_EM}
 #'
 #'
-#'  @export
+#' @export
 EM <- function(Rr, Rf, max_iteration = 100, valuefunction = value_varmean, M = NROW(Rr[[1]]),
                Tn = length(Rr)-1,
                ini_W = 1000, discount=1/1.01,
