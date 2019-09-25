@@ -1,5 +1,5 @@
 
-
+#' @export
 OCPA <- function(Rt, Rf, Tn = length(Rt)-1, M = NROW(Rt[[1]]),
                  ini_W = 1000, discount = 1/1.01,
                  lambda_c = 1/2, lambda_w = 1/2){

@@ -6,7 +6,7 @@
 \usage{
 value_varmean(update_par = NULL, i = 1, para, Rr, Rf,
   M = NROW(Rr[[1]]), Tn = length(Rr), W, discount = 1/1.01,
-  lambda = 1/2, returnW = FALSE)
+  lambda = 1/2, returnW = FALSE, detail = FALSE)
 }
 \arguments{
 \item{update_par}{Matrix. Each row contains the parameters at a time point.
