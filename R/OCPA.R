@@ -28,11 +28,13 @@ OCPA <- function(Rt, Rf, Tn = length(Rt)-1, M = NROW(Rt[[1]]),
   Wt <- array(dim=dim(Rr))
   Wt[,1] <- ini_W-lambda_w
 
-  Vt <- numeric(Tn)
+  Vt <- list()
   Zt <- list()
   for(i in seq_len(Tn)){
-    Vt[[i]] <- get_Vt(Wt = Wt[[i]], Dt = Dt[[i]], Gt = Gt[[i]], Ft = Ft[[i]])
-    Zt[[i]] <- get_Zt(Wt = Wt[[i]], Ht = Ht[[i]], Dt1 = Dt[[i+1]], Gt1 = Gt[[i+1]], Rf = Rf, lambda_c = lambda_c, lambda_w = lambda_w, mean_J = mean_J[[i]])
+    Vt[[i]] <- get_Vt(Wt = Wt[,i], Dt = Dt[[i]], Gt = Gt[[i]], Ft = Ft[[i]])
+    Zt[[i]] <- get_Zt(Wt = Wt[,i], Ht = Ht[[i]], Dt1 = Dt[[i+1]], Gt1 = Gt[[i+1]], Rf = Rf, lambda_c = lambda_c, lambda_w = lambda_w, mean_J = mean_J[[i]])
+    # Vt[[i]] <- get_Vt(Wt = Wt[[i]], Dt = Dt[[i]], Gt = Gt[[i]], Ft = Ft[[i]])
+    # Zt[[i]] <- get_Zt(Wt = Wt[[i]], Ht = Ht[[i]], Dt1 = Dt[[i+1]], Gt1 = Gt[[i+1]], Rf = Rf, lambda_c = lambda_c, lambda_w = lambda_w, mean_J = mean_J[[i]])
 
     Wt[,i+1] <- evo_Wt(Wt = Wt[,i], Rf = Rf,lambda_c = lambda_c, lambda_w = lambda_w, J1 =J1[,i], Zt = Zt[[i]])
   }
@@ -46,9 +48,22 @@ OCPA <- function(Rt, Rf, Tn = length(Rt)-1, M = NROW(Rt[[1]]),
   adii <- cumu_adi*lambda_c^2 + lambda_w^2*sapply(adi, function(x) tail(x, 1))
   # adiil <- lambda^2 + adii
   # ft <- sapply(Vt, mean)-lambda^2*adii
-  ft <- Vt-adii
-  Zt_c <- lapply(Zt, function(x) c(x[[1]],x[[2]]+lambda_c))
-  return(list(ft = ft, Zt = Zt_c, weights = weights, Wt = Wt+lambda_w))
+
+  # ft <- Vt-adii
+  ft <- mapply(function(Vt, adii)Vt-adii, Vt=Vt, adii=adii, SIMPLIFY = F  ) %>% sapply(mean)
+
+  BETA <- sapply(Zt,function(z) sapply(z, function(x) x[[1]]))
+  C <- sapply(Zt,function(z) sapply(z, function(x) x[[2]] +lambda_c))
+
+  # Zt_c <- lapply(Zt, function(x) c(x[[1]],x[[2]]+lambda_c))
+  # Zt_c <- do.call(base::rbind,Zt_c)
+  # colnames(Zt_c) <- c("BETA", "C")
+  specification <- list(Rf=Rf, Tn = Tn, M = M,
+                        ini_W = ini_W, discount = discount,
+                        lambda_c = lambda_c, lambda_w = lambda_w)
+  data <- list(Rt=Rt, J1=J1, mean_J = mean_J, mean_JJ = mean_JJ)
+  # new_stoconMODEL(ft, Zt_c, weights, Wt+lambda_w)
+  return(new_stoconMODEL(new_stoconOCPA(ft, BETA, C, weights, Wt+lambda_w, Rt, specification)))
 
 }
 
@@ -104,12 +119,15 @@ get_Vt <- function(Wt, Dt, Gt, Ft){
 }
 # Solution of control
 get_Zt <- function(Wt, Ht, Dt1, Gt1, Rf, lambda_c, lambda_w, mean_J){
+  lapply(Wt, get_Zt_pairwise,  Ht=Ht, Dt1=Dt1, Gt1=Gt1, Rf=Rf, lambda_c=lambda_c, lambda_w=lambda_w, mean_J=mean_J)
+}
+get_Zt_pairwise <- function(Wt, Ht, Dt1, Gt1, Rf, lambda_c, lambda_w, mean_J){
   -(Dt1 * (Wt*Rf + ((Rf -1)*lambda_c-lambda_w)) +Gt1) * inverse_2by2(Ht) %*% mean_J
 }
 
 evo_Wt <- function(Wt, Rf, lambda_c, lambda_w, J1, Zt){
-  mapply(function(W, J){Jt <- matrix(c(J, -1)); c(W*Rf +((Rf -1)*lambda_c-lambda_w) + t(Jt) %*% Zt)},
-         W = Wt, J = J1)
+  mapply(function(W, J, Zt){Jt <- matrix(c(J, -1)); c(W*Rf +((Rf -1)*lambda_c-lambda_w) + t(Jt) %*% Zt)},
+         W = Wt, J = J1, Zt = Zt)
 
 
 }
