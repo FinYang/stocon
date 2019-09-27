@@ -97,9 +97,9 @@ value_varmean <- function(update_par = NULL, i = 1, para, Rr, Rf,
 #' @seealso \code{EM}
 #' @export
 round_EM <- function(Rr, Rf, valuefunction = value_varmean, M = NROW(Rr[[1]]),
-                  Tn = length(Rr)-1,
-                  ini_W = 1000, discount=1/1.01,
-                  lambda = 1/2, para = NULL){
+                     Tn = length(Rr)-1,
+                     ini_W = 1000, discount=1/1.01,
+                     lambda = 1/2, para = NULL){
   N <- NCOL(Rr[[1]])
   if(is.null(para)){
     para <- matrix(0,nrow = Tn+1, ncol = 5)
@@ -121,7 +121,7 @@ round_EM <- function(Rr, Rf, valuefunction = value_varmean, M = NROW(Rr[[1]]),
   value <- numeric(Tn)
   for(i in 1:(Tn)){
     value[[i]] <- valuefunction(para = para, i=i, Rr = Rr, Rf = Rf, W = W,
-                           M = M, Tn = Tn, discount = discount, lambda = lambda)
+                                M = M, Tn = Tn, discount = discount, lambda = lambda)
     # value[[i]]$t <- i-1
   }
   wealth <- valuefunction(para = para, i=i, Rr = Rr, Rf = Rf, W = W,
@@ -168,12 +168,16 @@ EM <- function(Rr, Rf, max_iteration = 100, valuefunction = value_varmean, M = N
                lambda = 1/2, para = NULL, early_stop = ceiling(max_iteration/5)){
   pm <- NULL
 
+  time <- numeric(max_iteration+1)
+  time[[1]] <- Sys.time()
   pm[[1]] <- round_EM(Rr, Rf, valuefunction, M, Tn, ini_W, discount, lambda, para)
+  time[[2]] <- Sys.time()
   pb <- txtProgressBar(min = 2, max = 100, style = 3)
   n_unchange <- 0
   for(it in 2:max_iteration){
     pm[[it]] <-  round_EM(Rr, Rf, valuefunction, M, Tn, ini_W, discount, lambda, para= pm[[it-1]][[1]])
     setTxtProgressBar(pb, it)
+    time[[it+1]] <- Sys.time()
 
     if(abs(pm[[it]]$value[[1]] - pm[[it-1]]$value[[1]])/ abs(pm[[it-1]]$value[[1]]) <0.01){
       n_unchange <- n_unchange +1
@@ -182,7 +186,8 @@ EM <- function(Rr, Rf, max_iteration = 100, valuefunction = value_varmean, M = N
 
   }
   close(pb)
-  return(pm)
+  out <- list(pm=pm, time =time)
+  return(new_stoconMODEL(new_stoconEM(out)))
 }
 
 
