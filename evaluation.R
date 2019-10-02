@@ -3,8 +3,9 @@
 new_stoconOCPA <- function(ft, BETA, C, weights, Wt, data, specification){
   structure(list(result=list(ft = ft, BETA = BETA, C=C, weights = weights, Wt = Wt),data = data, specification = specification), class = c("stoconOCPA"))
 }
-new_stoconEM <- function(x){
-  structure(x, class = c("stoconEM"))
+new_stoconEM <- function(result,  data, specification, history, time){
+  structure(list(result = result,  data=data, specification=specification,
+                 history=history, time=time), class = c("stoconEM"))
 }
 
 new_stoconMODEL <- function(x){
@@ -12,9 +13,17 @@ new_stoconMODEL <- function(x){
 }
 
 
-validate_stoconMODEL <- function(model){
-  if(!"stoconMODEL" %in% class(model))
-    stop("Not a stoconMODEL")
+validate_stoconEM <- function(model){
+  if(!"stoconEM" %in% class(model))
+    stop("Not a stoconEM")
+
+  if(!identical(names(model), c("ft", "Zt", "weights", "Wt", "specification")))
+    stop("Missing model results")
+}
+
+validate_stoconOCPA <- function(model){
+  if(!"stoconOCPA" %in% class(model))
+    stop("Not a stoconOCPA")
 
   if(!identical(names(model), c("ft", "Zt", "weights", "Wt", "specification")))
     stop("Missing model results")
@@ -25,16 +34,11 @@ validate_stoconMODEL <- function(model){
 }
 
 
-fitted.stoconEM <- function(model, test_set, ...){
-  pre <- model[[length(model)]]
-  structure(list(result=list(ft = pre$value, Zt = cbind(pre$BETA, pre$C), weights = weights, Wt = Wt),data = data, specification = specification), class = c("stoconOCPA"))
-}
-
 
 fitted.stoconMODEL <- function(model, test_set, ...){
   weights <- model$result$weights
   Rf <- model$specification$Rf
-
+  test_set <- test_set[seq_len(NCOL(weights))]
   Rr <- mapply(function(Rt, omega) Rt %*% omega, Rt = test_set, omega = as.data.frame(weights))
   # J1 <- model$data$J1
   # mean_J <- model$data$mean_J
@@ -55,7 +59,7 @@ fitted.stoconMODEL <- function(model, test_set, ...){
   BETA <- model$result$BETA
   C <- model$result$C
 
-  Wt <- array(dim=dim(Rr))
+  Wt <- matrix(ncol = NCOL(Rr)+1, nrow = NROW(Rr))
   Wt[,1] <- model$specification$ini_W-lambda_w
   for(t in 1:(Tn)){
     Wt[,t+1] <- (Wt[,t]-BETA[,t])*Rf + BETA[,t]*Rr[,t] - C[,t]
@@ -94,40 +98,23 @@ fitted.stoconMODEL <- function(model, test_set, ...){
 
 
 # length.stocon
-print.stoconOCPA <- function(model){
-  cat("stocon Model: OCPA\n")
+print.stoconMODEL <- function(model){
+  cat("stocon Model: ", class(model)[[1]] , "\n")
   cat("Value function\n")
   cat(model$result$ft)
 
 }
 
-
-a <- EM(Rt, 1.01, lambda = 50)
-b <- OCPA(train_set, 1.01, lambda_c = 50, lambda_w = 50)
-fitted(model, test_set = test_set)
-
-
-
-
-
-
+# train_set <- lapply(train_set, function(x) x[,1:3])
+# a <- EM(train_set, 1.01, lambda = 50)
+# b <- OCPA(train_set, 1.01, lambda_c = 50, lambda_w = 50)
+# b1 <- OCPA(train_set, 1.01, lambda_c = 50, lambda_w = 50)
+# c <- round_EM(train_set, 1.01, lambda= 50)
+# fitted(model, test_set = test_set)
+# fitted(a, test_set)
+# fitted(b, test_set)
 
 
 
-x <- data.frame(a=1:10)
-
-deviden <- function(x, y){
-
-  # abc <- list(...)
-  x
-}
-deviden(x, w=3)
-
-?mutate
-
-
-mutate(x, bbc=11:20)
-
-lapply(1:10, function(x, n, a) x+n+a, n=3, a=19)
 
 

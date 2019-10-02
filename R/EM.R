@@ -131,7 +131,7 @@ round_EM <- function(Rr, Rf, valuefunction = value_varmean, M = NROW(Rr[[1]]),
   para_beta <- para[,1:3]
   para_c <- para[,4:5]
   weights <- para[,6:NCOL(para)]
-  weights <- cbind(weights, 1-rowSums(weights))
+  weights <- t(cbind(weights, 1-rowSums(weights)))
   colnames(weights)[[NCOL(weights)]] <- paste0("weight", NCOL(weights))
 
   BETA <- mapply(beta_function, para_beta = split(para_beta, seq_len(NROW(para_beta))), w = as.data.frame(wealth)[,-NCOL(wealth)])
@@ -139,7 +139,8 @@ round_EM <- function(Rr, Rf, valuefunction = value_varmean, M = NROW(Rr[[1]]),
 
 
 
-  return(list(para = ex_para, value = value, wealth = wealth, BETA = BETA, C=C))
+  # return(list(para = ex_para, value = value, wealth = wealth, BETA = BETA, C=C))
+  return(list(para = ex_para, ft = value, BETA = BETA, C=C, weights = weights, Wt = wealth))
 }
 
 
@@ -179,15 +180,25 @@ EM <- function(Rr, Rf, max_iteration = 100, valuefunction = value_varmean, M = N
     setTxtProgressBar(pb, it)
     time[[it+1]] <- Sys.time()
 
-    if(abs(pm[[it]]$value[[1]] - pm[[it-1]]$value[[1]])/ abs(pm[[it-1]]$value[[1]]) <0.01){
+    if(abs(pm[[it]]$ft[[1]] - pm[[it-1]]$ft[[1]])/ abs(pm[[it-1]]$ft[[1]]) <0.01){
       n_unchange <- n_unchange +1
       if(n_unchange == early_stop) break
     }
 
   }
   close(pb)
-  out <- list(pm=pm, time =time)
-  return(new_stoconMODEL(new_stoconEM(out)))
+  ###### same lambda #####
+  out <- new_stoconEM(result = pm[[length(pm)]][-1],
+              data = Rr,
+              specification = list(Rf=Rf, Tn = Tn, M = M,
+                                   ini_W = ini_W, discount = discount,
+                                   lambda  = lambda,
+                                   lambda_c  = lambda,
+                                   lambda_w  = lambda,
+                                   max_iteration = max_iteration,
+                                   early_stop = early_stop),
+              history=pm, time =time)
+  return(new_stoconMODEL(out))
 }
 
 

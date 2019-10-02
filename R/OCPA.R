@@ -6,6 +6,7 @@ OCPA <- function(Rt, Rf, Tn = length(Rt)-1, M = NROW(Rt[[1]]),
 
   weights <- sapply(Rt, weights_lm)
   Rr <- mapply(function(Rt, omega) Rt %*% omega, Rt = Rt, omega = as.data.frame(weights))
+  Rr <- Rr[,-NCOL(Rr)]
   # bw <- apply(Rr, 2, function(x) diff(range(x))/(length(x)/10))
   bw <- apply(Rr-Rf, 2, bw.nrd0)
 
@@ -25,7 +26,7 @@ OCPA <- function(Rt, Rf, Tn = length(Rt)-1, M = NROW(Rt[[1]]),
   Gt <- HDGF[[3]]
   Ft <- HDGF[[4]]
 
-  Wt <- array(dim=dim(Rr))
+  Wt <- matrix(ncol = NCOL(Rr)+1, nrow = NROW(Rr))
   Wt[,1] <- ini_W-lambda_w
 
   Vt <- list()
@@ -63,7 +64,7 @@ OCPA <- function(Rt, Rf, Tn = length(Rt)-1, M = NROW(Rt[[1]]),
                         lambda_c = lambda_c, lambda_w = lambda_w)
   data <- list(Rt=Rt, J1=J1, mean_J = mean_J, mean_JJ = mean_JJ)
   # new_stoconMODEL(ft, Zt_c, weights, Wt+lambda_w)
-  return(new_stoconMODEL(new_stoconOCPA(ft, BETA, C, weights, Wt+lambda_w, Rt, specification)))
+  return(new_stoconMODEL(new_stoconOCPA(ft, BETA, C, weights[,-NCOL(weights)], Wt+lambda_w, Rt, specification)))
 
 }
 
