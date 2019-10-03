@@ -1,8 +1,8 @@
 
-
 new_stoconOCPA <- function(ft, BETA, C, weights, Wt, data, specification){
   structure(list(result=list(ft = ft, BETA = BETA, C=C, weights = weights, Wt = Wt),data = data, specification = specification), class = c("stoconOCPA"))
 }
+
 new_stoconEM <- function(result,  data, specification, history, time){
   structure(list(result = result,  data=data, specification=specification,
                  history=history, time=time), class = c("stoconEM"))
@@ -12,7 +12,7 @@ new_stoconMODEL <- function(x){
   structure(x, class = c(class(x), "stoconMODEL"))
 }
 
-
+#' @export
 validate_stoconEM <- function(model){
   if(!"stoconEM" %in% class(model))
     stop("Not a stoconEM")
@@ -21,6 +21,7 @@ validate_stoconEM <- function(model){
     stop("Missing model results")
 }
 
+#' @export
 validate_stoconOCPA <- function(model){
   if(!"stoconOCPA" %in% class(model))
     stop("Not a stoconOCPA")
@@ -34,7 +35,7 @@ validate_stoconOCPA <- function(model){
 }
 
 
-
+#' @export
 fitted.stoconMODEL <- function(model, test_set, ...){
   weights <- model$result$weights
   Rf <- model$specification$Rf
@@ -98,6 +99,7 @@ fitted.stoconMODEL <- function(model, test_set, ...){
 
 
 # length.stocon
+#' @export
 print.stoconMODEL <- function(model){
   cat("stocon Model: ", class(model)[[1]] , "\n")
   cat("Value function\n")

@@ -4,14 +4,13 @@
 \alias{sim_simple}
 \title{Return Simulation from multivariate normal distribution}
 \usage{
-sim_simple(mu = 0.05, vol = 0.02, Tn = 10, N = 5, M = 10000,
-  varcov = NULL, par = 0.2, rho_do = NULL, dependent = FALSE)
+sim_simple(dis_par = list(mu = 0.05, vol = 0.02, df = 2),
+  distribution = c("norm", "t"), Tn = 10, N = 5, M = 10000,
+  varcov = NULL, par = 0.2, rho_do = NULL, dependent = c(NA,
+  "AR1"), den_par = list(AR1 = list(beta_0 = 0.05, beta_1 = 0.5)),
+  return_varcov = FALSE, plus_one = TRUE)
 }
 \arguments{
-\item{mu}{Either a scalar or a vector with length N contains mean of the assets returns}
-
-\item{vol}{Either a scalar or a vector with length N contains volatilities of the assets returns}
-
 \item{Tn}{Number of periods, excluding time 0.}
 
 \item{N}{Number of assets}
@@ -23,6 +22,10 @@ sim_simple(mu = 0.05, vol = 0.02, Tn = 10, N = 5, M = 10000,
 \item{rho_do}{The function of correlation between assets. See below for the default function.}
 
 \item{dependent}{If the following simulated series are added on the basis of existing ones.}
+
+\item{mu}{Either a scalar or a vector with length N contains mean of the assets returns}
+
+\item{vol}{Either a scalar or a vector with length N contains volatilities of the assets returns}
 
 \item{varcor}{The variance covariance matrix of the assets. Diagonal elements must equal to vol squared.
 If supplied, arguments \code{par} and \code{rho_do} will be ignored. If NULL, will be calculated using the correlation function and vol.}
