@@ -27,78 +27,99 @@
 #' @importFrom magrittr %>%
 #' @export
 #'
-sim_simple <- function(dis_par = list(mu = 0.05, vol = 0.02), distribution = c("norm", "t"), Tn = 10, N = 5, M = 1e4, varcov = NULL,
+sim_simple <- function(dis_par = list(mu = 0.05, vol = 0.02, df = 2), distribution = c("norm", "t"), Tn = 10, N = 5, M = 1e4, varcov = NULL,
                        par = 0.2, rho_do = NULL, dependent = c(NA, "AR1"),
-                       den_par = list(AR1 = list(beta_0 = 0.05, beta_1 = 0.5))){
+                       den_par = list(AR1 = list(beta_0 = 0.05, beta_1 = 0.5)),
+                       return_varcov = FALSE, plus_one = TRUE){
 
-  if(distribution[[1]] == "t")
-    return()
-  if(distribution[[1]] == "norm"){
-    mu <- dis_par$mu
-    vol <- dis_par$vol
-    if ((length(mu) == 1) && (length(vol) == 1)) {
-      mu <- rep(mu, N)
-      vol <- rep(vol, N)
-    } else {
-      if ((length(mu) != N) | (length(vol) != N)) {
-        stop("Mean vector or Vol vector length does not match the number of assets")
+
+  mu <- dis_par$mu
+  vol <- dis_par$vol
+  if(distribution[[1]] == "t"){
+    df <- dis_par$df
+
+  }
+  if ((length(mu) == 1) && (length(vol) == 1)) {
+    mu <- rep(mu, N)
+    vol <- rep(vol, N)
+  } else {
+    if ((length(mu) != N) | (length(vol) != N)) {
+      stop("Mean vector or Vol vector length does not match the number of assets")
+    }
+  }
+  time <- seq(from = 0, to = Tn, by = 1) # time span
+
+  # covariance matrix
+  if (!is.null(varcov)) {
+    if (!all(diag(varcov) == vol)) {
+      stop("Diagonal elements of covariance matrix must equal to vol squared")
+    }
+  } else {
+    if (is.null(rho_do)) {
+      rho_do <- function(i, j, parr = par) {
+        exp(-parr * abs(i - j))
       }
     }
-    time <- seq(from = 0, to = Tn, by = 1) # time span
+    rho_m <- sapply(1:N, function(i) {
+      sapply(1:N, function(j) rho_do(i = i, j = j))
+    })
+    # rho_m[lower.tri(rho_m, TRUE)] <- 0
+    # rho_m <- rho_m + t(rho_m) + diag(rep(1, N))
 
-    # covariance matrix
-    if (!is.null(varcov)) {
-      if (!all(diag(varcov) == vol)) {
-        stop("Diagonal elements of covariance matrix must equal to vol squared")
-      }
-    } else {
-      if (is.null(rho_do)) {
-        rho_do <- function(i, j, parr = par) {
-          exp(-parr * abs(i - j))
-        }
-      }
-      rho_m <- sapply(1:N, function(i) {
-        sapply(1:N, function(j) rho_do(i = i, j = j))
-      })
-      # rho_m[lower.tri(rho_m, TRUE)] <- 0
-      # rho_m <- rho_m + t(rho_m) + diag(rep(1, N))
+    varcov <- vol %*% t(vol) * rho_m
+  }
+  A <- chol(varcov)
+  # -
+  if(is.na(dependent[[1]])){
+    Rt <- NULL
+    if (N == 1) {
+      for (t in 1:(Tn + 1)) {
+        Z <- matrix(rnorm(M * N), ncol = N)
+        if(distribution[[1]] == "t"){
+          W <- matrix(df/rchisq(M, df))
 
-      varcov <- vol %*% t(vol) * rho_m
-    }
-    A <- chol(varcov)
-    # -
-    if(!is.na(dependent[[1]])){
-      Rt <- NULL
-      if (N == 1) {
-        for (t in 1:(Tn + 1)) {
-          Z <- matrix(rnorm(M * N), ncol = N)
+          Rt[[t]] <- replicate(M, mu) + Z %*% A * W
+        } else {
           Rt[[t]] <- replicate(M, mu) + Z %*% A
-        }
-      } else {
-        for (t in 1:(Tn + 1)) {
-          Z <- matrix(rnorm(M * N), ncol = N)
-          Rt[[t]] <- t(replicate(M, mu)) + Z %*% A
+
         }
       }
     } else {
-      if("AR1" %in% dependent[[1]]){
-        beta_0 <- den_par$AR1$beta_0
-        beta_1 <- den_par$AR1$beta_1
-        rt <- matrix(nrow=M, ncol=N)
-        Rt <- lapply(seq_len(Tn), function(X) rt)
-        for(i in 1:N)
-          Rt[[1]][,i] <- rnorm(M, mean = mu[i], sd = vol[i])
-        for(t in 2:(Tn+1)){
-          Z <- matrix(rnorm(M*N), ncol=N)
-          Rt[[t]] <- beta_0 + beta_1 * Rt[[t-1]]  +  Z %*% A +t(replicate(M,mu))
+      for (t in 1:(Tn + 1)) {
+        Z <- matrix(rnorm(M * N), ncol = N)
+        Rt[[t]] <- t(replicate(M, mu)) + Z %*% A
+      }
+    }
+  } else {
+    if("AR1" %in% dependent[[1]]){
+      beta_0 <- den_par$AR1$beta_0
+      beta_1 <- den_par$AR1$beta_1
+      rt <- matrix(nrow=M, ncol=N)
+      Rt <- lapply(seq_len(Tn), function(X) rt)
+      for(i in 1:N)
+        Rt[[1]][,i] <- rnorm(M, mean = mu[i], sd = vol[i])
+      for(t in 2:(Tn+1)){
+        Z <- matrix(rnorm(M*N), ncol=N)
+        if(distribution[[1]] == "t"){
+          W <- matrix(df/rchisq(M, df))
+          Rt[[t]] <- beta_0 + beta_1 * Rt[[t-1]]  +  Z %*% A * W
+        } else {
+          Rt[[t]] <- beta_0 + beta_1 * Rt[[t-1]]  +  Z %*% A
         }
       }
-      #   Rt[[1]] <- sapply(1:N, function(i) rnorm(M, mean = mu[[i]], sd = vol[[i]]))
-      #   for (t in 2:(Tn + 1)) {
-      #     Z <- matrix(rnorm(M * N), ncol = N)
-      #     Rt[[t]] <- Rt[[t - 1]] + t(replicate(M, mu)) + Z %*% A
-      #   }
     }
+    #   Rt[[1]] <- sapply(1:N, function(i) rnorm(M, mean = mu[[i]], sd = vol[[i]]))
+    #   for (t in 2:(Tn + 1)) {
+    #     Z <- matrix(rnorm(M * N), ncol = N)
+    #     Rt[[t]] <- Rt[[t - 1]] + t(replicate(M, mu)) + Z %*% A
+    #   }
+  }
+
+  if(plus_one){
+    Rt <- lapply(Rt, `+`, 1)
+  }
+  if(return_varcov){
+    return(list(Rt = Rt, varcov =varcov))
   }
   return(Rt)
 }

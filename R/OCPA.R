@@ -2,8 +2,10 @@
 #' @export
 OCPA <- function(Rt, Rf, Tn = length(Rt)-1, M = NROW(Rt[[1]]),
                  ini_W = 1000, discount = 1/1.01,
-                 lambda_c = 1/2, lambda_w = 1/2){
-
+                 lambda_c = 1/2, lambda_w = 1/2, lambda = NULL){
+  if(!is.null(lambda)){
+    lambda_c <- lambda_w <- lambda
+  }
   weights <- sapply(Rt, weights_lm)
   Rr <- mapply(function(Rt, omega) Rt %*% omega, Rt = Rt, omega = as.data.frame(weights))
   Rr <- Rr[,-NCOL(Rr)]
@@ -64,7 +66,7 @@ OCPA <- function(Rt, Rf, Tn = length(Rt)-1, M = NROW(Rt[[1]]),
                         lambda_c = lambda_c, lambda_w = lambda_w)
   data <- list(Rt=Rt, J1=J1, mean_J = mean_J, mean_JJ = mean_JJ)
   # new_stoconMODEL(ft, Zt_c, weights, Wt+lambda_w)
-  return(new_stoconMODEL(new_stoconOCPA(ft, BETA, C, weights[,-NCOL(weights)], Wt+lambda_w, Rt, specification)))
+  return(new_stoconMODEL(new_stoconOCPA(ft, BETA, C, weights[,-NCOL(weights)], Wt+lambda_w, data, specification)))
 
 }
 
