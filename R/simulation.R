@@ -27,7 +27,8 @@
 #' @importFrom magrittr %>%
 #' @export
 #'
-sim_simple <- function(dis_par = list(mu = 0.05, vol = 0.02, df = 2), distribution = c("norm", "t"), Tn = 10, N = 5, M = 1e4, varcov = NULL,
+sim_simple <- function(dis_par = list(mu = 0.05, vol = 0.02, df = 2), distribution = c("norm", "t"),
+                       Tn = 10, N = 5, M = 1e4, varcov = NULL,
                        par = 0.2, rho_do = NULL, dependent = c(NA, "AR1"),
                        den_par = list(AR1 = list(beta_0 = 0.05, beta_1 = 0.5)),
                        return_varcov = FALSE, plus_one = TRUE){

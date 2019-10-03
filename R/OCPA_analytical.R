@@ -2,7 +2,7 @@
 
 #' @export
 OCPA_analytical <- function(N, Rf, Rt = NULL, varcov = NULL, distribution = c("norm", "t"),
-                            dis_par = list(mu = 0.05, vol = 0.02, df=2),par = 0.2,  Tn = 9, M = 10000,
+                            dis_par = list(mu = 0.05, vol = 0.02, df=2),par = 0.2,  Tn = 10, M = 10000,
                             ini_W = 1000, discount = 1/1.01,
                             lambda_c = 1/2, lambda_w = 1/2, lambda = NULL, ...){
   if(!is.null(lambda)){

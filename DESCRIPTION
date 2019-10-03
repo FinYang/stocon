@@ -9,11 +9,15 @@ Encoding: UTF-8
 LazyData: true
 URL: https://pkg.yangzhuoranyang.com/stocon, https://github.com/FinYang/stocon
 BugReports: https://github.com/FinYang/stocon/issues
-Imports: tidyverse,
+Imports: 
+    tidyverse,
     glmnet,
     quadprog,
     quadprogXT,
     kernlab,
-    caret
+    caret,
+    Rcpp
 RoxygenNote: 6.1.1
 Suggests: quadprogXT
+LinkingTo: 
+    Rcpp
