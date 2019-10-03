@@ -36,7 +36,7 @@ validate_stoconOCPA <- function(model){
 
 
 #' @export
-fitted.stoconMODEL <- function(model, test_set, ...){
+predict.stoconMODEL <- function(model, test_set, ...){
   weights <- model$result$weights
   Rf <- model$specification$Rf
   test_set <- test_set[seq_len(NCOL(weights))]
@@ -105,6 +105,11 @@ print.stoconMODEL <- function(model){
   cat("Value function\n")
   cat(model$result$ft)
 
+}
+
+#' @export
+fitted.stoconMODEL <- function(model){
+  model$result$ft
 }
 
 # train_set <- lapply(train_set, function(x) x[,1:3])
