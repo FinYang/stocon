@@ -103,7 +103,7 @@ predict.stoconMODEL <- function(model, test_set, ...){
 print.stoconMODEL <- function(model){
   cat("stocon Model: ", class(model)[[1]] , "\n")
   cat("Value function\n")
-  cat(model$result$ft)
+  cat(fitted(model))
 
 }
 
@@ -121,7 +121,13 @@ fitted.stoconMODEL <- function(model){
 # fitted(a, test_set)
 # fitted(b, test_set)
 
-
+#' @export
+plot.stoconEM <- function(model){
+  v <- sapply(model$history, function(x) x$ft[[1]])
+  ggplot2::qplot(x=seq_along(v), y=v, geom = "line") +
+    xlab("Number of Iteration") +
+    ylab("Value")
+}
 
 
 
