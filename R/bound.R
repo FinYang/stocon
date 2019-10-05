@@ -101,10 +101,20 @@ L_bound <- function(Rt, Rf, M = NROW(Rt[[1]]),
   optim_for_each <- function(x, max_iteration=100){
     para <- list()
     para[[1]] <- init_para()
+    var_path <- numeric(max_iteration)
+    path <- list()
+    n_rep <- 0
     for(i in seq_len(max_iteration)){
-      para[[i+1]] <- optim(para[[i]], value_for_each, x=x)$par
+      path[[i]] <- optim(para[[i]], value_for_each, x=x)
+      para[[i+1]] <- path[[i]]$par
+      var_path[[i]] <- path[[i]]$value
+      if(i>1 && (((var_path[[i]]-var_path[[i-1]])/var_path[[i]])<0.01) ){
+        n_rep <- n_rep+1
+      }
+      if(n_rep>3) break
     }
     optim(para[[length(para)]], value_for_each, x=x)$value
+    # return(var_path)
   }
   if(parallel){
 
@@ -117,27 +127,6 @@ L_bound <- function(Rt, Rf, M = NROW(Rt[[1]]),
   }
   mean(do.call(base::c, out))
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

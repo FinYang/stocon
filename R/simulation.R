@@ -33,7 +33,7 @@ sim_simple <- function(dis_par = list(mu = 0.05, vol = 0.02, df = 2), distributi
                        den_par = list(AR1 = list(beta_0 = 0.05, beta_1 = 0.5)),
                        return_varcov = FALSE, plus_one = TRUE){
 
-
+  if(!is.na(dependent) && is.logical(dependent) && dependent) dependent <- "AR1"
   mu <- dis_par$mu
   vol <- dis_par$vol
   if(distribution[[1]] == "t"){
@@ -96,14 +96,14 @@ sim_simple <- function(dis_par = list(mu = 0.05, vol = 0.02, df = 2), distributi
       beta_0 <- den_par$AR1$beta_0
       beta_1 <- den_par$AR1$beta_1
       rt <- matrix(nrow=M, ncol=N)
-      Rt <- lapply(seq_len(Tn), function(X) rt)
+      Rt <- lapply(seq_len(Tn+1), function(X) rt)
       for(i in 1:N)
         Rt[[1]][,i] <- rnorm(M, mean = mu[i], sd = vol[i])
       for(t in 2:(Tn+1)){
         Z <- matrix(rnorm(M*N), ncol=N)
         if(distribution[[1]] == "t"){
           W <- matrix(df/rchisq(M, df))
-          Rt[[t]] <- beta_0 + beta_1 * Rt[[t-1]]  +  Z %*% A * W
+          Rt[[t]] <- beta_0 + beta_1 * Rt[[t-1]]  +  (Z %*% A) * c(W)
         } else {
           Rt[[t]] <- beta_0 + beta_1 * Rt[[t-1]]  +  Z %*% A
         }
