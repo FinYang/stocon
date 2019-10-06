@@ -19,7 +19,7 @@ array2list <- function(xarray){
 L_bound <- function(Rt, Rf, M = NROW(Rt[[1]]),
                     Tn = length(Rt)-1,
                     ini_W = 1000, discount=1/1.01,
-                    lambda = 1/2, polynomial = TRUE, parallel = TRUE){
+                    lambda = 1/2, polynomial = TRUE, parallel = TRUE, each = FALSE){
   N <- NCOL(Rt[[1]])
 
   Rt_array <- list2array(Rt)
@@ -125,7 +125,8 @@ L_bound <- function(Rt, Rf, M = NROW(Rt[[1]]),
 
     out <- pbapply::pbsapply(Rt_list, optim_for_each)
   }
-  mean(do.call(base::c, out))
+  if(each) return(do.call(base::c, out))
+  return(mean(do.call(base::c, out)))
 }
 
 
