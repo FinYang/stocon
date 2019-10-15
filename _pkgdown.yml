@@ -1,6 +1,7 @@
 template:
   params:
     bootswatch: flatly
+    ganalytics: UA-129140417-1
 
 authors:
   Yangzhuoran Yang:
