@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>portfolio quadratic programming — qp_weights_do • stocon</title>
+<title>The Variance-Mean value function used in the EM algorithm — value_varmean • stocon</title>
 
 
 <!-- jquery -->
@@ -36,8 +36,8 @@
   <link href="../extra.css" rel="stylesheet">
   
 
-<meta property="og:title" content="portfolio quadratic programming — qp_weights_do" />
-<meta property="og:description" content="portfolio quadratic programming" />
+<meta property="og:title" content="The Variance-Mean value function used in the EM algorithm — value_varmean" />
+<meta property="og:description" content="The Variance-Mean value function used in the EM algorithm" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -104,25 +104,79 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>portfolio quadratic programming</h1>
-    <small class="dont-index">Source: <a href='https://github.com/FinYang/stocon/blob/master/R/additional_weights.R'><code>R/additional_weights.R</code></a></small>
-    <div class="hidden name"><code>qp_weights_do.Rd</code></div>
+    <h1>The Variance-Mean value function used in the EM algorithm</h1>
+    <small class="dont-index">Source: <a href='https://github.com/FinYang/stocon/blob/master/R/EM.R'><code>R/EM.R</code></a></small>
+    <div class="hidden name"><code>value_varmean.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>portfolio quadratic programming</p>
+    <p>The Variance-Mean value function used in the EM algorithm</p>
     </div>
 
-    <pre class="usage"><span class='fu'>qp_weights_do</span>(<span class='no'>rt</span>, <span class='kw'>constr</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>method</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"quadprogXT"</span>))</pre>
+    <pre class="usage"><span class='fu'>value_varmean</span>(<span class='kw'>update_par</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>i</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='no'>para</span>, <span class='no'>Rr</span>, <span class='no'>Rf</span>,
+  <span class='kw'>M</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>NROW</a></span>(<span class='no'>Rr</span><span class='kw'>[[</span><span class='fl'>1</span>]]), <span class='kw'>Tn</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/length.html'>length</a></span>(<span class='no'>Rr</span>), <span class='no'>W</span>, <span class='kw'>discount</span> <span class='kw'>=</span> <span class='fl'>1</span>/<span class='fl'>1.01</span>,
+  <span class='kw'>lambda</span> <span class='kw'>=</span> <span class='fl'>1</span>/<span class='fl'>2</span>, <span class='kw'>returnW</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>detail</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>)</pre>
 
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>update_par</th>
+      <td><p>Matrix. Each row contains the parameters at a time point.
+The number of column are the sum of the number of parameter in beta function,
+the number of parameters in the consumption function, and the number of weights of the assets minus 1
+(the sum of the weights is one so only need to estimate N-1 weights).
+The positions in the vector should also be in that order.</p></td>
+    </tr>
+    <tr>
+      <th>i</th>
+      <td><p>Integer. The position of the current time point</p></td>
+    </tr>
+    <tr>
+      <th>Rr</th>
+      <td><p>List of matrix. The rertuns of the assets.
+Each list is for one time point and each column in the matrix is one assets.</p></td>
+    </tr>
+    <tr>
+      <th>Rf</th>
+      <td><p>Scalar. The risk free rate. e.g. 1.01</p></td>
+    </tr>
+    <tr>
+      <th>M</th>
+      <td><p>Integer. The number of instances for one assets at a time</p></td>
+    </tr>
+    <tr>
+      <th>Tn</th>
+      <td><p>Integer. The length of time horizon. Not including 0.</p></td>
+    </tr>
+    <tr>
+      <th>W</th>
+      <td><p>Matrix. Each column is one time point and each row is one observation.</p></td>
+    </tr>
+    <tr>
+      <th>discount</th>
+      <td><p>Scalar. The rate of discount. e.g. 1/1.01</p></td>
+    </tr>
+    <tr>
+      <th>lambda</th>
+      <td><p>The scalar that make the calculation easiler.</p></td>
+    </tr>
+    <tr>
+      <th>returnW</th>
+      <td><p>If TRUE, return the wealth. If False, return the value from the value function.</p></td>
+    </tr>
+    </table>
 
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
+      <li><a href="#arguments">Arguments</a></li>
     </ul>
 
+    <h2>Author</h2>
+    <p>Yangzhuoran Yang</p>
   </div>
 </div>
 

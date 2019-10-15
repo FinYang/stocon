@@ -29,8 +29,3 @@ navbar:
 
 
 
-
-reference:
-- title: All functions
-  desc: ~
-  contents: '`sim_simple`'

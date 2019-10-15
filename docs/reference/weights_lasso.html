@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>portfolio quadratic programming — qp_weights_do • stocon</title>
+<title>Additional portfolio selection weights method: LASSO, qp — weights_qp • stocon</title>
 
 
 <!-- jquery -->
@@ -36,8 +36,9 @@
   <link href="../extra.css" rel="stylesheet">
   
 
-<meta property="og:title" content="portfolio quadratic programming — qp_weights_do" />
-<meta property="og:description" content="portfolio quadratic programming" />
+<meta property="og:title" content="Additional portfolio selection weights method: LASSO, qp — weights_qp" />
+<meta property="og:description" content="Default using lasso after quadratic programming. As a approximation to constrained risk
+minimization" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -104,25 +105,67 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>portfolio quadratic programming</h1>
+    <h1>Additional portfolio selection weights method: LASSO, qp</h1>
     <small class="dont-index">Source: <a href='https://github.com/FinYang/stocon/blob/master/R/additional_weights.R'><code>R/additional_weights.R</code></a></small>
-    <div class="hidden name"><code>qp_weights_do.Rd</code></div>
+    <div class="hidden name"><code>weights_lasso.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>portfolio quadratic programming</p>
+    <p>Default using lasso after quadratic programming. As a approximation to constrained risk
+minimization</p>
     </div>
 
-    <pre class="usage"><span class='fu'>qp_weights_do</span>(<span class='no'>rt</span>, <span class='kw'>constr</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>method</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"quadprogXT"</span>))</pre>
+    <pre class="usage"><span class='fu'>weights_qp</span>(<span class='no'>Rt</span>, <span class='kw'>constr</span> <span class='kw'>=</span> <span class='fl'>1</span>)
 
+<span class='fu'>weights_lasso</span>(<span class='no'>Rt</span>, <span class='kw'>N</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/nrow.html'>NCOL</a></span>(<span class='no'>Rt</span><span class='kw'>[[</span><span class='fl'>1</span>]]), <span class='kw'>qp_lasso</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
+  <span class='kw'>qp_weights</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
 
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>Rt</th>
+      <td><p>Lists of return rt</p></td>
+    </tr>
+    <tr>
+      <th>constr</th>
+      <td><p>If numeric, take as the imposed constraint.
+If NULL, no constraint. Otherwise compute proper constraint using 10-fold cross-validation</p></td>
+    </tr>
+    <tr>
+      <th>qp_lasso</th>
+      <td><p>if TRUE, taking no-short-sale portfolio from quadratic programming as y in lasso</p></td>
+    </tr>
+    <tr>
+      <th>qp_weights</th>
+      <td><p>can supply weights of o-short-sale portfolio from quadratic programming</p></td>
+    </tr>
+    </table>
+
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>List of weights for each period</p>
+    <h2 class="hasAnchor" id="functions"><a class="anchor" href="#functions"></a>Functions</h2>
+
+    <ul>
+<li><p><code>weights_qp</code>: portfolio selection quadratic programming for multiperiod data set</p></li>
+</ul>
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <div class='dont-index'><p><code><a href='weights_lm.html'>weights_lm</a></code></p></div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
+      <li><a href="#arguments">Arguments</a></li>
+      <li><a href="#value">Value</a></li>
+      <li><a href="#functions">Functions</a></li>
+      <li><a href="#see-also">See also</a></li>
     </ul>
 
+    <h2>Author</h2>
+    <p>Yangzhuoran Yang</p>
   </div>
 </div>
 

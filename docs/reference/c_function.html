@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>portfolio quadratic programming — qp_weights_do • stocon</title>
+<title>The comsumption function used in the EM algorithm — c_function • stocon</title>
 
 
 <!-- jquery -->
@@ -36,8 +36,8 @@
   <link href="../extra.css" rel="stylesheet">
   
 
-<meta property="og:title" content="portfolio quadratic programming — qp_weights_do" />
-<meta property="og:description" content="portfolio quadratic programming" />
+<meta property="og:title" content="The comsumption function used in the EM algorithm — c_function" />
+<meta property="og:description" content="It is the wealth times the logit function of a first order polynomial of wealth" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -104,25 +104,40 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>portfolio quadratic programming</h1>
-    <small class="dont-index">Source: <a href='https://github.com/FinYang/stocon/blob/master/R/additional_weights.R'><code>R/additional_weights.R</code></a></small>
-    <div class="hidden name"><code>qp_weights_do.Rd</code></div>
+    <h1>The comsumption function used in the EM algorithm</h1>
+    <small class="dont-index">Source: <a href='https://github.com/FinYang/stocon/blob/master/R/EM.R'><code>R/EM.R</code></a></small>
+    <div class="hidden name"><code>c_function.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>portfolio quadratic programming</p>
+    <p>It is the wealth times the logit function of a first order polynomial of wealth</p>
     </div>
 
-    <pre class="usage"><span class='fu'>qp_weights_do</span>(<span class='no'>rt</span>, <span class='kw'>constr</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>method</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"quadprogXT"</span>))</pre>
+    <pre class="usage"><span class='fu'>c_function</span>(<span class='no'>para_c</span>, <span class='no'>w</span>)</pre>
 
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>para_c</th>
+      <td><p>Vector of length 2 containing the parameters in the comsumption function</p></td>
+    </tr>
+    <tr>
+      <th>w</th>
+      <td><p>Scalar. The Wealth in the comsumption function.</p></td>
+    </tr>
+    </table>
 
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
+      <li><a href="#arguments">Arguments</a></li>
     </ul>
 
+    <h2>Author</h2>
+    <p>Yangzhuoran Yang</p>
   </div>
 </div>
 

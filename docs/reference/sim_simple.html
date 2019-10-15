@@ -8,10 +8,12 @@
 
 <title>Return Simulation from multivariate normal distribution — sim_simple • stocon</title>
 
+
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 <!-- Bootstrap -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/3.3.7/flatly/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
 
@@ -31,11 +33,14 @@
 
 
 
-<meta property="og:title" content="Return Simulation from multivariate normal distribution — sim_simple" />
+  <link href="../extra.css" rel="stylesheet">
+  
 
+<meta property="og:title" content="Return Simulation from multivariate normal distribution — sim_simple" />
 <meta property="og:description" content="Simulate self-independent returns using Choleski Decomposition where correlation depends on the order of assets
 from multvariate normal distribution" />
 <meta name="twitter:card" content="summary" />
+
 
 
 
@@ -81,7 +86,6 @@ from multvariate normal distribution" />
   <a href="../reference/index.html">Reference</a>
 </li>
       </ul>
-      
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="https://github.com/FinYang/stocon">
@@ -107,26 +111,19 @@ from multvariate normal distribution" />
     </div>
 
     <div class="ref-description">
-    
     <p>Simulate self-independent returns using Choleski Decomposition where correlation depends on the order of assets
 from multvariate normal distribution</p>
-    
     </div>
 
-    <pre class="usage"><span class='fu'>sim_simple</span>(<span class='kw'>mu</span> <span class='kw'>=</span> <span class='fl'>0.05</span>, <span class='kw'>vol</span> <span class='kw'>=</span> <span class='fl'>0.02</span>, <span class='kw'>Tn</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>N</span> <span class='kw'>=</span> <span class='fl'>5</span>, <span class='kw'>M</span> <span class='kw'>=</span> <span class='fl'>10000</span>,
-  <span class='kw'>par</span> <span class='kw'>=</span> <span class='fl'>0.2</span>, <span class='kw'>rho_do</span> <span class='kw'>=</span> <span class='kw'>NULL</span>)</pre>
-    
+    <pre class="usage"><span class='fu'>sim_simple</span>(<span class='kw'>dis_par</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>mu</span> <span class='kw'>=</span> <span class='fl'>0.05</span>, <span class='kw'>vol</span> <span class='kw'>=</span> <span class='fl'>0.02</span>, <span class='kw'>df</span> <span class='kw'>=</span> <span class='fl'>2</span>),
+  <span class='kw'>distribution</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"norm"</span>, <span class='st'>"t"</span>), <span class='kw'>Tn</span> <span class='kw'>=</span> <span class='fl'>10</span>, <span class='kw'>N</span> <span class='kw'>=</span> <span class='fl'>5</span>, <span class='kw'>M</span> <span class='kw'>=</span> <span class='fl'>10000</span>,
+  <span class='kw'>varcov</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>par</span> <span class='kw'>=</span> <span class='fl'>0.2</span>, <span class='kw'>rho_do</span> <span class='kw'>=</span> <span class='kw'>NULL</span>, <span class='kw'>dependent</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='fl'>NA</span>,
+  <span class='st'>"AR1"</span>), <span class='kw'>den_par</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>AR1</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/list.html'>list</a></span>(<span class='kw'>beta_0</span> <span class='kw'>=</span> <span class='fl'>0.05</span>, <span class='kw'>beta_1</span> <span class='kw'>=</span> <span class='fl'>0.5</span>)),
+  <span class='kw'>return_varcov</span> <span class='kw'>=</span> <span class='fl'>FALSE</span>, <span class='kw'>plus_one</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
+
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
-    <tr>
-      <th>mu</th>
-      <td><p>Either a scalar or a vector with length N contains mean of the assets returns</p></td>
-    </tr>
-    <tr>
-      <th>vol</th>
-      <td><p>Either a scalar or a vector with length N contains volatilities of the assets returns</p></td>
-    </tr>
     <tr>
       <th>Tn</th>
       <td><p>Number of periods, excluding time 0.</p></td>
@@ -148,32 +145,41 @@ from multvariate normal distribution</p>
       <td><p>The function of correlation between assets. See below for the default function.</p></td>
     </tr>
     <tr>
+      <th>dependent</th>
+      <td><p>If the following simulated series are added on the basis of existing ones.</p></td>
+    </tr>
+    <tr>
+      <th>mu</th>
+      <td><p>Either a scalar or a vector with length N contains mean of the assets returns</p></td>
+    </tr>
+    <tr>
+      <th>vol</th>
+      <td><p>Either a scalar or a vector with length N contains volatilities of the assets returns</p></td>
+    </tr>
+    <tr>
       <th>varcor</th>
       <td><p>The variance covariance matrix of the assets. Diagonal elements must equal to vol squared.
 If supplied, arguments <code>par</code> and <code>rho_do</code> will be ignored. If NULL, will be calculated using the correlation function and vol.</p></td>
     </tr>
     </table>
-    
+
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>List of returns</p>
-    
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
     <p>The correlation function determines the correlation between asset by the difference between the index of the assets.
-The default function is <code>rho = exp(-par * |distance|)</code></p>
-    
+The default function is <code>rho = exp(-par * |distance|)</code>.
+User defined correlation function need to have two arguments <code>i</code> and  <code>j</code> to indicate the position of assets</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
-      
       <li><a href="#value">Value</a></li>
-
       <li><a href="#details">Details</a></li>
-          </ul>
+    </ul>
 
     <h2>Author</h2>
     <p>Yangzhuoran Yang</p>

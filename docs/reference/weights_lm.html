@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>portfolio quadratic programming — qp_weights_do • stocon</title>
+<title>Finding weights that minimise variance of return using linear regression — weights_lm • stocon</title>
 
 
 <!-- jquery -->
@@ -36,8 +36,9 @@
   <link href="../extra.css" rel="stylesheet">
   
 
-<meta property="og:title" content="portfolio quadratic programming — qp_weights_do" />
-<meta property="og:description" content="portfolio quadratic programming" />
+<meta property="og:title" content="Finding weights that minimise variance of return using linear regression — weights_lm" />
+<meta property="og:description" content="Finding weights that minimise variance of return using linear regression as described in
+Fan, Zhang &amp;amp; Yu (2012)" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -104,25 +105,49 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>portfolio quadratic programming</h1>
-    <small class="dont-index">Source: <a href='https://github.com/FinYang/stocon/blob/master/R/additional_weights.R'><code>R/additional_weights.R</code></a></small>
-    <div class="hidden name"><code>qp_weights_do.Rd</code></div>
+    <h1>Finding weights that minimise variance of return using linear regression</h1>
+    <small class="dont-index">Source: <a href='https://github.com/FinYang/stocon/blob/master/R/weights.R'><code>R/weights.R</code></a></small>
+    <div class="hidden name"><code>weights_lm.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>portfolio quadratic programming</p>
+    <p>Finding weights that minimise variance of return using linear regression as described in
+Fan, Zhang &amp; Yu (2012)</p>
     </div>
 
-    <pre class="usage"><span class='fu'>qp_weights_do</span>(<span class='no'>rt</span>, <span class='kw'>constr</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>method</span> <span class='kw'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span>(<span class='st'>"quadprogXT"</span>))</pre>
+    <pre class="usage"><span class='fu'>weights_lm</span>(<span class='no'>Rt</span>)</pre>
 
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>Rt</th>
+      <td><p>Lists of return. e.g. output from <code><a href='sim_simple.html'>sim_simple</a></code></p></td>
+    </tr>
+    </table>
 
+    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
+
+    <p>List of weights for each period</p>
+    <h2 class="hasAnchor" id="references"><a class="anchor" href="#references"></a>References</h2>
+
+    <p>Fan, J., Zhang, J., &amp; Yu, K. (2012). Vast Portfolio Selection With Gross-Exposure Constraints. Journal of the American Statistical Association, 107(498), 592–606. https://doi.org/10.1080/01621459.2012.682825</p>
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+
+    <div class='dont-index'><p><code><a href='weights_lasso.html'>weights_lasso</a></code></p></div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
+      <li><a href="#arguments">Arguments</a></li>
+      <li><a href="#value">Value</a></li>
+      <li><a href="#references">References</a></li>
+      <li><a href="#see-also">See also</a></li>
     </ul>
 
+    <h2>Author</h2>
+    <p>Yangzhuoran Yang</p>
   </div>
 </div>
 
